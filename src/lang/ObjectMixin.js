@@ -17,13 +17,9 @@ JARS.module('lang.ObjectMixin').$import([
 ]).$export(function(getCurrentModuleData, isArray, Logger, Class, isClass, isInstance, Obj, Arr) {
     'use strict';
 
-    var RECEIVER_MISSING = 0,
-        RECEIVER_NOT_ALLOWED = 1,
-        mixinTemplates = [],
+    var RECEIVER_MISSING = 'There is no receiver given!',
+        RECEIVER_NOT_ALLOWED = 'The given receiver "${rec}" is not part or instance of the allowed Classes!',
         ObjectMixin;
-
-    mixinTemplates[RECEIVER_MISSING] = 'There is no receiver given!';
-    mixinTemplates[RECEIVER_NOT_ALLOWED] = 'The given receiver "${rec}" is not part or instance of the allowed Classes!';
 
     ObjectMixin = Class('ObjectMixin', {
         $: {
@@ -33,9 +29,7 @@ JARS.module('lang.ObjectMixin').$import([
                 this._$name = mixinName;
                 this._$toMix = Obj.from(toMix);
                 this._$neededMixins = Arr.filter(options.depends || [], ObjectMixin.isInstance, ObjectMixin);
-                this._$logger = new Logger(this.Class.getClassName() + ' "#<' + getCurrentModuleData().moduleName + ':' + mixinName + '>"', {
-                    tpl: mixinTemplates
-                });
+                this._$logger = new Logger(this.Class.getClassName() + ' "#<' + getCurrentModuleData().moduleName + ':' + mixinName + '>"');
             },
 
             mixInto: function(receiver) {

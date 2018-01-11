@@ -13,15 +13,10 @@ JARS.module('lang.ObjectInterface').$import([
     'use strict';
 
 	// TODO
-    var interfaceTemplates = [],
-        IMPLEMENTED_METHODS_MISSING = 0,
-        IMPLEMENTOR_MISSING = 1,
-        IMPLEMENTORTYPE_MISMATCH = 2,
+    var IMPLEMENTED_METHODS_MISSING = '${impl} must implement the method(s): "${missingMethods}" !',
+        IMPLEMENTOR_MISSING = 'No Class, instance or Object given to check!',
+        IMPLEMENTORTYPE_MISMATCH = 'You must provide a Class or instance to check',
         ObjectInterface;
-
-    interfaceTemplates[IMPLEMENTED_METHODS_MISSING] = '${impl} must implement the method(s): "${missingMethods}" !';
-    interfaceTemplates[IMPLEMENTOR_MISSING] = 'No Class, instance or Object given to check!';
-    interfaceTemplates[IMPLEMENTORTYPE_MISMATCH] = 'You must provide a Class or instance to check';
 
     ObjectInterface = Class('ObjectInterface', {
         _$: {
@@ -42,9 +37,7 @@ JARS.module('lang.ObjectInterface').$import([
             construct: function(interfaceName, methods) {
                 this._$name = interfaceName;
                 this._$methods = Arr.from(methods);
-                this._$logger = new Logger('Interface "#<' + getCurrentModuleData().moduleName + ':' + interfaceName + '>"', {
-                    tpl: interfaceTemplates
-                });
+                this._$logger = new Logger('Interface "#<' + getCurrentModuleData().moduleName + ':' + interfaceName + '>"');
             },
 
             extendz: function(superInterface) {

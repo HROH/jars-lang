@@ -45,34 +45,17 @@ JARS.module('lang.Class', [
         rClass = /^[A-Z]\w+$/,
         Classes = Obj(),
         classBluePrint = ['(function(){function ', '(){return this instanceof ', '?', '.New(this,arguments):', '.New(arguments)};return ', '})()'],
-        MSG_ALREADY_DESTRUCTED = 0,
-        MSG_INVALID_OR_EXISTING_CLASS = 1,
-        MSG_WRONG_CLASS = 2,
-        MSG_WRONG_CLASS_AND_MODULE = 3,
-        MSG_WRONG_CONTEXT = 4,
-        MSG_WRONG_MODULE = 5,
+        MSG_ALREADY_DESTRUCTED = 'Proxy failed! ${hash} was already destructed!',
+        MSG_INVALID_OR_EXISTING_CLASS = 'Invalid or already existing Class: ${hash}',
+        MSG_WRONG_CLASS = 'Proxy failed! ${instanceHash} must be an instance of ${classHash}!',
+        MSG_WRONG_CLASS_AND_MODULE = 'Proxy failed! ${instanceHash} must be an instance of ${classHash} or in one of the following modules: ${missingAccess}, but has only access to ${hasAccess}!',
+        MSG_WRONG_CONTEXT = 'Proxy failed! Method was called in wrong context!',
+        MSG_WRONG_MODULE = 'Proxy failed! ${instanceHash} must be in one of the following modules: ${missingAccess}, but has only access to ${hasAccess}!',
         extensionPredicates = Arr(),
         instantiationPredicates = Arr(),
         ClassProtectedProperties, classFactoryLogger;
 
-    classFactoryLogger = (function classFactoryLoggerSetup() {
-        var classFactoryMessageTemplates = [],
-            proxyFailed = 'Proxy failed! ',
-            instanceMustBe = '${instanceHash} must be ',
-            instanceOfClass = 'an instance of ${classHash}',
-            inModules = 'in one of the following modules: ${missingAccess}, but has only access to ${hasAccess}';
-
-        classFactoryMessageTemplates[MSG_ALREADY_DESTRUCTED] = proxyFailed + '${hash} was already destructed!';
-        classFactoryMessageTemplates[MSG_INVALID_OR_EXISTING_CLASS] = 'Illegal or already existing Class: ${hash}';
-        classFactoryMessageTemplates[MSG_WRONG_CLASS] = proxyFailed + instanceMustBe + instanceOfClass + '!';
-        classFactoryMessageTemplates[MSG_WRONG_CLASS_AND_MODULE] = proxyFailed + instanceMustBe + instanceOfClass + ' or ' + inModules + '!';
-        classFactoryMessageTemplates[MSG_WRONG_CONTEXT] = proxyFailed + 'Method was called in wrong context!';
-        classFactoryMessageTemplates[MSG_WRONG_MODULE] = proxyFailed + instanceMustBe + inModules + '!';
-
-        return Logger.forCurrentModule({
-            tpl: classFactoryMessageTemplates
-        });
-    })();
+    classFactoryLogger = Logger.forCurrentModule();
 
     function instanceOrClassExists(instanceOrClass, checkInstance) {
         var exists = false;
