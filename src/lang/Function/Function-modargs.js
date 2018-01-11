@@ -78,7 +78,7 @@ JARS.module('lang.Function.Function-modargs').$import([
             return createArgumentsMapper(this, arguments, applyPlaceholderArg);
         }
     }, {
-        placeholderArg: config.placeholderArg || null
+        placeholderArg: config.placeholderArg || {}
     });
 
 
