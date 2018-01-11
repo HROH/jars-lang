@@ -4,7 +4,7 @@ JARS.module('lang.Function', [
     'Function-flow',
     'Function-guards',
     'Function-modargs'
-]).$import({
+]).$import([{
     System: [
         '::isA',
         '::isFunction'
@@ -13,7 +13,7 @@ JARS.module('lang.Function', [
         '.',
         '::from'
     ]
-}).$export(function(isA, isFunction, Arr, fromArgs) {
+}, '.!Function']).$export(function(isA, isFunction, Arr, fromArgs) {
     'use strict';
 
     var lang = this,

@@ -6,12 +6,12 @@ JARS.module('lang.Array', [
     'Array-iterate',
     'Array-manipulate',
     'Array-reduce'
-]).$import({
+]).$import([{
     '.assert': [
         '::isNotNil',
         'Type::isFunction'
     ]
-}).$export(function(assertIsNotNil, assertIsFunction) {
+}, '.!Array']).$export(function(assertIsNotNil, assertIsFunction) {
     'use strict';
 
     /**

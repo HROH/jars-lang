@@ -15,19 +15,49 @@ JARS.module('lang', [
     'Object.*',
     'operations.*',
     'String'
-]).$import({
-    System: [
-        'Modules::getCurrentModuleData',
-        '::env',
-        '::isString',
-        '!'
-    ]
-}).$export(function(getCurrentModuleData, env, isString, config) {
+]).meta({
+	plugIn: function(pluginRequest) {
+        var requestor = pluginRequest.requestor,
+			EXTENSION_DELIMITER = ',',
+			EXTENSION_BUNDLE = 'all',
+			EXTENSION_PREFIX = pluginRequest.info.data + '-';
+
+        requestor.setMeta({
+			plugIn: function(typePluginRequest) {
+				var requestedExtensions = typePluginRequest.info.data.split(EXTENSION_DELIMITER),
+					extensions = [],
+					extLen = requestedExtensions.length,
+					idx = 0,
+					extension;
+
+				if (requestedExtensions[0] === EXTENSION_BUNDLE) {
+					extensions = [requestor.bundle.name];
+				}
+				else {
+					while (idx < extLen) {
+						extension = requestor.bundle.find(EXTENSION_PREFIX + requestedExtensions[idx++]);
+						
+						extension ? extensions.push(extension) : typePluginRequest.fail('Couldn\'t find submodule');
+					}
+				}
+
+				typePluginRequest.$importAndLink(extensions, function extensionsLoaded() {
+					return this;
+				});
+			}
+        });
+		
+		pluginRequest.success();
+    }
+}).$import({
+    System: ['::env', '::isString', '::$$internals', '!']
+}).$export(function(env, isString, internals, config) {
     'use strict';
 
     var sandboxes = {},
         container = document.documentElement,
         __SANDBOX__ = '__SANDBOX__',
+        SYSTEM_SANDBOX = '__SYSTEM__',
         hasOwn = {}.hasOwnProperty,
         nativeTypes = {},
         nativeTypeSandbox, lang;
@@ -229,7 +259,7 @@ JARS.module('lang', [
         }
     };
 
-    nativeTypeSandbox = lang.sandbox('__SYSTEM__');
+    nativeTypeSandbox = lang.sandbox(SYSTEM_SANDBOX);
 
     /**
      * @access private
@@ -244,17 +274,20 @@ JARS.module('lang', [
     function getNativeType(typeString) {
         var Type = nativeTypes[typeString] || (config.allowProtoOverride ? env.global[typeString] : nativeTypeSandbox.add(typeString));
 
-        if (!nativeTypes[typeString]) {
-
-            makePluggable(typeString, Type);
-
-            nativeTypes[typeString] = Type;
-        }
+        nativeTypes[typeString] || (nativeTypes[typeString] = Type);
 
         return Type;
     }
 
     function enhanceNativeType(Type, prototypeMethods, staticMethods) {
+        addPrototypeMethods(Type, prototypeMethods);
+
+        addStaticMethods(Type, staticMethods);
+
+        return Type;
+    }
+
+    function addPrototypeMethods(Type, prototypeMethods) {
         var typePrototype = Type.prototype,
             methodName;
 
@@ -267,50 +300,16 @@ JARS.module('lang', [
                 hasOwnProp(Type, methodName) || (Type[methodName] = createDelegate(typePrototype[methodName]));
             }
         }
+    }
+
+    function addStaticMethods(Type, staticMethods) {
+        var methodName;
 
         for (methodName in staticMethods) {
             if (hasOwnProp(staticMethods, methodName) && !hasOwnProp(Type, methodName)) {
                 Type[methodName] = staticMethods[methodName];
             }
         }
-
-        return Type;
-    }
-
-    /**
-     * @access private
-     *
-     * @memberof lang
-     * @inner
-     *
-     * @param {String} typeString
-     * @param {Object} Type
-     */
-    function makePluggable(typeString, Type) {
-        var moduleName = getCurrentModuleData().moduleName,
-            subModuleName = moduleName + '.' + typeString + '-';
-
-        Type.$plugIn = function(pluginRequest) {
-            var extensions = pluginRequest.info.data.split(','),
-                extLen = extensions.length,
-                idx = 0;
-
-
-            if (extensions[0] === 'all') {
-                extensions = [moduleName + '.*'];
-            }
-            else {
-                while (idx < extLen) {
-                    extensions[idx] = subModuleName + extensions[idx++];
-                }
-            }
-
-            pluginRequest.$importAndLink(extensions, function extensionsLoaded() {
-                pluginRequest.success(Type);
-            }, function extensionsAborted(extensionName) {
-                pluginRequest.fail('Could not import the extension "' + extensionName + '" requested by "' + pluginRequest.listeningModule.name + '"');
-            });
-        };
     }
 
     /**

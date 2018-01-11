@@ -4,7 +4,7 @@ JARS.module('lang.Object', [
     'Object-iterate',
     'Object-manipulate',
     'Object-reduce'
-]).$import({
+]).$import([{
     System: [
         '::isA',
         '::isBoolean',
@@ -15,7 +15,7 @@ JARS.module('lang.Object', [
         '::from',
         '!find,iterate'
     ]
-}).$export(function(isA, isBoolean, isObject, isNil, fromArgs, Arr) {
+}, '.!Object']).$export(function(isA, isBoolean, isObject, isNil, fromArgs, Arr) {
     'use strict';
 
     var lang = this,

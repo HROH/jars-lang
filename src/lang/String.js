@@ -5,7 +5,8 @@ JARS.module('lang.String').$import([
             '::isString'
         ]
     },
-    '.Array!manipulate,reduce'
+    '.Array!manipulate,reduce',
+	'.!String'
 ]).$export(function(isA, isString, Arr) {
     'use strict';
 
