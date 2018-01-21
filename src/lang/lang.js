@@ -191,7 +191,7 @@ JARS.module('lang', [
             sandboxWindow, sandboxDoc;
 
         iframe.style.display = 'none';
-        iframe.id = domain;
+        iframe.id = domain + '#' + lang.generateHash('xx-x-x-x-xxx');
         container.appendChild(iframe);
         sandboxWindow = iframe.contentWindow;
         sandboxDoc = sandboxWindow.document;
