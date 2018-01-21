@@ -1,4 +1,4 @@
-JARS.module('lang.Object.Object-iterate').$import('.!derive').$export(function(Obj) {
+JARS.module('lang.Object.Iterate').$import('.!Derive').$export(function(Obj) {
     'use strict';
 
     var forOwn = createForIn(true),

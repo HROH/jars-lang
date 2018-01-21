@@ -1,17 +1,6 @@
-JARS.module('lang.Array', [
-    'Array-check',
-    'Array-derive',
-    'Array-find',
-    'Array-index',
-    'Array-iterate',
-    'Array-manipulate',
-    'Array-reduce'
-]).$import([{
-    '.assert': [
-        '::isNotNil',
-        'Type::isFunction'
-    ]
-}, '.!Array']).$export(function(assertIsNotNil, assertIsFunction) {
+JARS.module('lang.Array', ['Check', 'Derive', 'Find', 'Index', 'Iterate', 'Manipulate', 'Reduce']).$import([{
+    '.assert': ['::isNotNil', 'Type::isFunction']
+}, '.!']).$export(function(assertIsNotNil, assertIsFunction) {
     'use strict';
 
     /**

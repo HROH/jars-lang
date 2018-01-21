@@ -1,9 +1,4 @@
-JARS.module('lang.operations.Logical').$import([
-    '.::createOperation',
-    '.::operands',
-    '..Object!iterate',
-    '..Enum'
-]).$export(function(createOperation, operands, Obj, Enum) {
+JARS.module('lang.operations.Logical').$import(['.::createOperation', '.::operands', '..Object!Iterate', '..Enum']).$export(function(createOperation, operands, Obj, Enum) {
     'use strict';
 
     var Logical = {

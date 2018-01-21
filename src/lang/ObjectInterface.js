@@ -1,15 +1,6 @@
-JARS.module('lang.ObjectInterface').$import([
-    {
-        System: [
-            'Modules::getCurrentModuleData',
-            'Logger',
-            '::isFunction',
-            '::isNumber'
-        ]
-    },
-    '.Class',
-    '.Array!check,derive,iterate'
-]).$export(function(getCurrentModuleData, Logger, isFunction, isNumber, Class, Arr) {
+JARS.module('lang.ObjectInterface').$import([{
+    System: ['Modules::getCurrentModuleData', 'Logger', '::isFunction', '::isNumber']
+}, '.Class', '.Array!Check,Derive,Iterate']).$export(function(getCurrentModuleData, Logger, isFunction, isNumber, Class, Arr) {
     'use strict';
 
 	// TODO

@@ -1,15 +1,6 @@
-JARS.module('lang.Interface').$import([
-    {
-        System: [
-            'Modules::getCurrentModuleData',
-            'Logger',
-            '::isFunction',
-            '::isNumber'
-        ]
-    },
-    '.Class',
-    '.Array!check,derive,iterate'
-]).$export(function(getCurrentModuleData, Logger, isFunction, isNumber, Class, Arr) {
+JARS.module('lang.Interface').$import([{
+    System: ['Modules::getCurrentModuleData', 'Logger', '::isFunction', '::isNumber']
+}, '.Class', '.Array!Check,Derive,Iterate']).$export(function(getCurrentModuleData, Logger, isFunction, isNumber, Class, Arr) {
     'use strict';
 
     var IMPLEMENTED_METHODS_MISSING = '${impl} must implement the method(s): "${missingMethods}" !',

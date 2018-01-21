@@ -1,8 +1,5 @@
-JARS.module('lang.Array.Array-iterate').$import({
-    '..assert': [
-        '::isNotNil',
-        'Type::isFunction'
-    ]
+JARS.module('lang.Array.Iterate').$import({
+    '..assert': ['::isNotNil', 'Type::isFunction']
 }).$export(function(assertIsNotNil, assertIsFunction) {
     'use strict';
 

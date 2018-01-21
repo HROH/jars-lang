@@ -1,13 +1,6 @@
-JARS.module('lang.Array.Array-derive').$import([
-    {
-        '..assert': [
-            '::isNotNil',
-            'Type::isFunction'
-        ]
-    },
-    '.!iterate',
-    '..Object!derive'
-]).$export(function(assertIsNotNil, assertIsFunction, Arr, Obj) {
+JARS.module('lang.Array.Derive').$import([{
+    '..assert': ['::isNotNil', 'Type::isFunction']
+}, '.!Iterate', '..Object!Derive']).$export(function(assertIsNotNil, assertIsFunction, Arr, Obj) {
     'use strict';
 
     var forEach = Arr.forEach,

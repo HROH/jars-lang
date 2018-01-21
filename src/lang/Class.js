@@ -1,35 +1,10 @@
-JARS.module('lang.Class', [
-    'Abstract',
-    'Final',
-    'Singleton'
-]).$import([
-    {
-        System: [
-            {
-                Modules: [
-                    '::getCurrentModuleData',
-                    '::use'
-                ]
-            },
-            'Logger',
-            '::isA',
-            '::isNil',
-            '::isObject',
-            '::isFunction'
-        ],
-        '.Object': [
-            '::from',
-            '::hasOwn',
-            '!all'
-        ],
-        '.Function': [
-            '!advice',
-            '::apply',
-            '::attempt'
-        ]
-    },
-    '.Array!check,find,index,iterate,manipulate'
-]).$export(function(getCurrentModuleData, useModule, Logger, isA, isNil, isObject, isFunction, fromObject, hasOwn, Obj, Fn, applyFunction, attempt, Arr) {
+JARS.module('lang.Class', ['Abstract', 'Final', 'Singleton']).$import([{
+    System: [{
+        Modules: ['::getCurrentModuleData', '::use']
+    }, 'Logger', '::isA', '::isNil', '::isObject', '::isFunction'],
+    '.Object': ['::from', '::hasOwn', '!All'],
+    '.Function': ['!Advice', '::apply', '::attempt']
+}, '.Array!Check,Find,Index,Iterate,Manipulate']).$export(function(getCurrentModuleData, useModule, Logger, isA, isNil, isObject, isFunction, fromObject, hasOwn, Obj, Fn, applyFunction, attempt, Arr) {
     'use strict';
 
     var lang = this,

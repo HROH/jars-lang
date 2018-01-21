@@ -19,8 +19,7 @@ JARS.module('lang', [
 	plugIn: function(pluginRequest) {
         var requestor = pluginRequest.requestor,
 			EXTENSION_DELIMITER = ',',
-			EXTENSION_BUNDLE = 'all',
-			EXTENSION_PREFIX = pluginRequest.info.data + '-';
+			EXTENSION_BUNDLE = 'All';
 
         requestor.setMeta({
 			plugIn: function(typePluginRequest) {
@@ -35,8 +34,8 @@ JARS.module('lang', [
 				}
 				else {
 					while (idx < extLen) {
-						extension = requestor.bundle.find(EXTENSION_PREFIX + requestedExtensions[idx++]);
-						
+						extension = requestor.bundle.find(requestedExtensions[idx++]);
+
 						extension ? extensions.push(extension) : typePluginRequest.fail('Couldn\'t find submodule');
 					}
 				}
@@ -46,7 +45,7 @@ JARS.module('lang', [
 				});
 			}
         });
-		
+
 		pluginRequest.success();
     }
 }).$import({

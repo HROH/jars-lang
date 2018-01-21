@@ -1,21 +1,7 @@
-JARS.module('lang.Object', [
-    'Object-derive',
-    'Object-info',
-    'Object-iterate',
-    'Object-manipulate',
-    'Object-reduce'
-]).$import([{
-    System: [
-        '::isA',
-        '::isBoolean',
-        '::isObject',
-        '::isNil'
-    ],
-    '.Array': [
-        '::from',
-        '!find,iterate'
-    ]
-}, '.!Object']).$export(function(isA, isBoolean, isObject, isNil, fromArgs, Arr) {
+JARS.module('lang.Object', ['Derive', 'Info', 'Iterate', 'Manipulate', 'Reduce']).$import([{
+    System: ['::isA', '::isBoolean', '::isObject', '::isNil'],
+    '.Array': ['::from', '!Find,Iterate']
+}, '.!']).$export(function(isA, isBoolean, isObject, isNil, fromArgs, Arr) {
     'use strict';
 
     var lang = this,
@@ -25,7 +11,7 @@ JARS.module('lang.Object', [
         hasOwn;
 
     /**
-     * Extend jar.lang.Object with some useful methods
+     * Extend lang.Object with some useful methods
      */
     Obj.enhance({
         /**
@@ -59,10 +45,17 @@ JARS.module('lang.Object', [
                 deep = args.pop() || false;
             }
 
-            args.each(initMerge, {
-                o: object,
-                d: deep,
-                k: keepDefault
+            args.each(function(mergeObject) {
+                var prop;
+
+                mergeLevel++;
+                mergedObjects.push([mergeObject, object]);
+
+                for (prop in mergeObject) {
+                    hasOwn(mergeObject, prop) && merge(object, mergeObject, prop, deep, keepDefault);
+                }
+
+                --mergeLevel || (mergedObjects = Arr());
             });
 
             return object;
@@ -85,60 +78,28 @@ JARS.module('lang.Object', [
         return isBoolean(value) || isNil(value);
     }
 
-    function initMerge(mergeObject) {
-        /*jslint validthis: true */
-        var prop;
+    function merge(obj, mergeObj, prop, deep, keepDefault) {
+        var hasOld = hasOwn(obj, prop);
 
-        mergeLevel++;
-        mergedObjects.push([mergeObject, this.o]);
-
-        for (prop in mergeObject) {
-            mergeValue(this.o, mergeObject, prop, this.d, this.k);
-        }
-
-        --mergeLevel || (mergedObjects = Arr());
+        obj[prop] = calculateNewValue(hasOld ? obj[prop] : null, mergeObj[prop], deep, hasOld ? keepDefault : false);
     }
 
-    function mergeValue(obj, mergeObj, prop, deep, keepDefault) {
-        var oldValue, newValue, valueToMerge, isOldValueObject;
-
-        if (hasOwn(mergeObj, [prop])) {
-            valueToMerge = mergeObj[prop];
-
-            if (hasOwn(obj, [prop])) {
-                oldValue = obj[prop];
-            }
-            else {
-                keepDefault = false;
-                oldValue = null;
-            }
-
-            isOldValueObject = isObject(oldValue);
-
-            if (deep && (isOldValueObject || !keepDefault) && isObject(valueToMerge)) {
-                newValue = mergeDeepValue(isOldValueObject ? oldValue : {}, valueToMerge, keepDefault);
-            }
-            else {
-                newValue = keepDefault ? oldValue : valueToMerge;
-            }
-
-            obj[prop] = newValue;
-        }
+    function calculateNewValue(oldValue, valueToMerge, deep, keepDefault) {
+        return shouldMergeDeep(oldValue, valueToMerge, deep, keepDefault) ? mergeDeep(oldValue, valueToMerge, keepDefault) : keepDefault ? oldValue : valueToMerge;
     }
 
-    function mergeDeepValue(oldValue, valueToMerge, keepDefault) {
-        return getAlreadyMergedValue(valueToMerge) || Obj.merge(oldValue, valueToMerge, true, keepDefault);
+    function shouldMergeDeep(oldValue, valueToMerge, deep, keepDefault) {
+        return deep && (!keepDefault || isObject(oldValue)) && isObject(valueToMerge);
+    }
+
+    function mergeDeep(oldValue, valueToMerge, keepDefault) {
+        return getAlreadyMergedValue(valueToMerge) || Obj.merge(isObject(oldValue) ? oldValue : {}, valueToMerge, true, keepDefault);
     }
 
     function getAlreadyMergedValue(valueToMerge) {
-        var alreadyMergedData = mergedObjects.find(equalsMergedValue, valueToMerge);
-
-        return alreadyMergedData ? alreadyMergedData[1] : undefined;
-    }
-
-    function equalsMergedValue(mergedObjectData) {
-        /*jslint validthis: true */
-        return mergedObjectData[0] === this;
+        return (mergedObjects.find(function(mergedObjectData) {
+            return mergedObjectData[0] === valueToMerge;
+        }, valueToMerge) || [])[1];
     }
 
     return Obj;

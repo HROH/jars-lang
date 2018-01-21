@@ -1,8 +1,4 @@
-JARS.module('lang.Array.Array-manipulate').$import([
-    'System::isArrayLike',
-    '.!index,iterate',
-    '..Object!derive'
-]).$export(function(isArrayLike, Arr, Obj) {
+JARS.module('lang.Array.Manipulate').$import(['System::isArrayLike', '.!Index,Iterate', '..Object!Derive']).$export(function(isArrayLike, Arr, Obj) {
     'use strict';
 
     var forEach = Arr.forEach;

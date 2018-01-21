@@ -1,4 +1,4 @@
-JARS.module('lang.Class.Pool').$import('..Object!info').$export(function(Obj) {
+JARS.module('lang.Class.Pool').$import('..Object!Info').$export(function(Obj) {
     'use strict';
 
     var Class = this,

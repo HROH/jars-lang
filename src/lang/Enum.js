@@ -1,14 +1,6 @@
-JARS.module('lang.Enum').$import([
-    {
-        System: [
-            '::isArray',
-            '::isObject'
-        ]
-    },
-    '.Array!iterate',
-    '.Object!iterate',
-    '.Class'
-]).$export(function(isArray, isObject, Arr, Obj, Class) {
+JARS.module('lang.Enum').$import([{
+    System: ['::isArray', '::isObject']
+}, '.Array!Iterate', '.Object!Iterate', '.Class']).$export(function(isArray, isObject, Arr, Obj, Class) {
     'use strict';
 
     var BASE_TWO = 2,

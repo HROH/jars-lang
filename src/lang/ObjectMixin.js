@@ -1,20 +1,7 @@
-JARS.module('lang.ObjectMixin').$import([
-    {
-        System: [
-            'Modules::getCurrentModuleData',
-            '::isArray',
-            'Logger'
-        ],
-        '.Class': [
-            '.',
-            '::isClass',
-            '::isInstance'
-        ]
-    },
-    '.Object',
-    '.Array!check,derive,iterate',
-    '.Function!modargs'
-]).$export(function(getCurrentModuleData, isArray, Logger, Class, isClass, isInstance, Obj, Arr) {
+JARS.module('lang.ObjectMixin').$import([{
+    System: ['Modules::getCurrentModuleData', '::isArray', 'Logger'],
+    '.Class': ['.', '::isClass', '::isInstance']
+}, '.Object', '.Array!Check,Derive,Iterate', '.Function!Modargs']).$export(function(getCurrentModuleData, isArray, Logger, Class, isClass, isInstance, Obj, Arr) {
     'use strict';
 
     var RECEIVER_MISSING = 'There is no receiver given!',

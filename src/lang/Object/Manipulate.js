@@ -1,7 +1,4 @@
-JARS.module('lang.Object.Object-manipulate').$import([
-    '.!derive,iterate',
-    '..Array!reduce'
-]).$export(function(Obj, Arr) {
+JARS.module('lang.Object.Manipulate').$import(['.!Derive,Iterate', '..Array!Reduce']).$export(function(Obj, Arr) {
     'use strict';
 
     Obj.enhance({

@@ -1,14 +1,6 @@
-JARS.module('lang.Function.Function-flow').$import([
-    {
-        '.': [
-            '::from',
-            '::apply'
-        ]
-    },
-    'System::env',
-    '..Array::from',
-    '..Object!derive'
-]).$export(function(fromFunction, applyFunction, env, fromArgs, Obj) {
+JARS.module('lang.Function.Flow').$import([{
+    '.': ['::from', '::apply']
+}, 'System::env', '..Array::from', '..Object!Derive']).$export(function(fromFunction, applyFunction, env, fromArgs, Obj) {
     'use strict';
 
     var Fn = this,

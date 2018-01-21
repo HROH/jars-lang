@@ -1,17 +1,7 @@
-JARS.module('lang.Function.Function-modargs').$import([
-    {
-        '.': [
-            '::from',
-            '::apply'
-        ],
-        '..Array': [
-            '::from',
-            '::reverse'
-        ]
-    },
-    'System!',
-    '..Object!derive'
-]).$export(function(fromFunction, applyFunction, fromArgs, reverseArray, config, Obj) {
+JARS.module('lang.Function.Modargs').$import([{
+    '.': ['::from', '::apply'],
+    '..Array': ['::from', '::reverse']
+}, 'System!', '..Object!Derive']).$export(function(fromFunction, applyFunction, fromArgs, reverseArray, config, Obj) {
     'use strict';
 
     var Fn = this;

@@ -1,8 +1,4 @@
-JARS.module('lang.operations.Comparison').$import([
-    '.::createOperation',
-    '..Object!iterate',
-    '..Enum'
-]).$export(function(createOperation, Obj, Enum) {
+JARS.module('lang.operations.Comparison').$import(['.::createOperation', '..Object!Iterate', '..Enum']).$export(function(createOperation, Obj, Enum) {
     'use strict';
 
     /**

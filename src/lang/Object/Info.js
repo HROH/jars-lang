@@ -1,7 +1,4 @@
-JARS.module('lang.Object.Object-info').$import([
-    '.!reduce,derive',
-    '..Array!reduce'
-]).$export(function(Obj, Arr) {
+JARS.module('lang.Object.Info').$import(['.!Reduce,Derive', '..Array!Reduce']).$export(function(Obj, Arr) {
     'use strict';
 
     var reduce = Obj.reduce;

@@ -1,4 +1,4 @@
-JARS.module('lang.Object.Object-reduce').$export(function() {
+JARS.module('lang.Object.Reduce').$export(function() {
     'use strict';
 
     var Obj = this;

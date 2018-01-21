@@ -1,12 +1,6 @@
-JARS.module('lang.Function.Function-guards').$import([
-    {
-        '.': [
-            '::from',
-            '::apply'
-        ]
-    },
-    '..Object!derive'
-]).$export(function(fromFunction, applyFunction, Obj) {
+JARS.module('lang.Function.Guards').$import([{
+    '.': ['::from', '::apply']
+}, '..Object!Derive']).$export(function(fromFunction, applyFunction, Obj) {
     'use strict';
 
     var Fn = this;

@@ -1,7 +1,4 @@
-JARS.module('lang.Function.Function-advice').$import([
-    '.::apply',
-    '..Object!derive'
-]).$export(function(applyFunction, Obj) {
+JARS.module('lang.Function.Advice').$import(['.::apply', '..Object!Derive']).$export(function(applyFunction, Obj) {
     'use strict';
 
     var Fn = this;

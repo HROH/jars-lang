@@ -1,8 +1,4 @@
-JARS.module('lang.Array.Array-index').$import([
-    '..assert::isNotNil',
-    '..Object!derive',
-    '.!find'
-]).$export(function(assertIsNotNil, Obj, Arr) {
+JARS.module('lang.Array.Index').$import(['..assert::isNotNil', '..Object!Derive', '.!Find']).$export(function(assertIsNotNil, Obj, Arr) {
     'use strict';
 
     Arr.enhance({

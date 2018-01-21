@@ -1,8 +1,5 @@
 JARS.module('lang.Constant').$import({
-    '.Function': [
-        '::identity',
-        '!modargs'
-    ]
+    '.Function': ['::identity', '!Modargs']
 }).$export(function(identity, Fn) {
     'use strict';
 

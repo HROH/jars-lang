@@ -1,9 +1,4 @@
-JARS.module('lang.Object.Object-derive').$import([
-    'System::isNil',
-    '..Array!reduce',
-    '.!reduce',
-    '..Function::identity'
-]).$export(function(isNil, Arr, Obj, identity) {
+JARS.module('lang.Object.Derive').$import(['System::isNil', '..Array!Reduce', '.!Reduce', '..Function::identity']).$export(function(isNil, Arr, Obj, identity) {
     'use strict';
 
     Obj.enhance({

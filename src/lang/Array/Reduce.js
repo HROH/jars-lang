@@ -1,9 +1,5 @@
-JARS.module('lang.Array.Array-reduce').$import({
-    '..assert': [
-        '.',
-        '::isNotNil',
-        'Type::isFunction'
-    ]
+JARS.module('lang.Array.Reduce').$import({
+    '..assert': ['.', '::isNotNil', 'Type::isFunction']
 }).$export(function(assert, assertIsNotNil, assertIsFunction) {
     'use strict';
 

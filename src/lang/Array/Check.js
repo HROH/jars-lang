@@ -1,12 +1,6 @@
-JARS.module('lang.Array.Array-check').$import([
-    {
-        '..assert': [
-            '::isNotNil',
-            'Type::isFunction'
-        ]
-    },
-    '..Object!derive'
-]).$export(function(assertIsNotNil, assertIsFunction, Obj) {
+JARS.module('lang.Array.Check').$import([{
+    '..assert': ['::isNotNil', 'Type::isFunction']
+}, '..Object!Derive']).$export(function(assertIsNotNil, assertIsFunction, Obj) {
     'use strict';
 
     var Arr = this,

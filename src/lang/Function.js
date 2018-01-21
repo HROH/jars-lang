@@ -1,19 +1,7 @@
-JARS.module('lang.Function', [
-    'Function-advice',
-    'Function-combined',
-    'Function-flow',
-    'Function-guards',
-    'Function-modargs'
-]).$import([{
-    System: [
-        '::isA',
-        '::isFunction'
-    ],
-    '.Array': [
-        '.',
-        '::from'
-    ]
-}, '.!Function']).$export(function(isA, isFunction, Arr, fromArgs) {
+JARS.module('lang.Function', ['Advice', 'Combined', 'Flow', 'Guards', 'Modargs']).$import([{
+    System: ['::isA', '::isFunction'],
+    '.Array': ['.', '::from']
+}, '.!']).$export(function(isA, isFunction, Arr, fromArgs) {
     'use strict';
 
     var lang = this,

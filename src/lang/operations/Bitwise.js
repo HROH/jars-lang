@@ -1,8 +1,4 @@
-JARS.module('lang.operations.Bitwise').$import([
-    '.::createOperation',
-    '..Object!iterate',
-    '..Enum'
-]).$export(function(createOperation, Obj, Enum) {
+JARS.module('lang.operations.Bitwise').$import(['.::createOperation', '..Object!Iterate', '..Enum']).$export(function(createOperation, Obj, Enum) {
     'use strict';
 
     var Bitwise = {

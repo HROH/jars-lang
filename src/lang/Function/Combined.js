@@ -1,14 +1,6 @@
-JARS.module('lang.Function.Function-combined').$import([
-    {
-        '.': [
-            '::from',
-            '::apply'
-        ]
-    },
-    'System::isFunction',
-    '..Array!reduce',
-    '..Object!derive'
-]).$export(function(fromFunction, applyFunction, isFunction, Arr, Obj) {
+JARS.module('lang.Function.Combined').$import([{
+    '.': ['::from', '::apply']
+}, 'System::isFunction', '..Array!Reduce', '..Object!Derive']).$export(function(fromFunction, applyFunction, isFunction, Arr, Obj) {
     'use strict';
 
     var Fn = this;

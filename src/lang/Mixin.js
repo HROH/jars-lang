@@ -1,21 +1,7 @@
-JARS.module('lang.Mixin').$import([
-    {
-        System: [
-            'Modules::getCurrentModuleData',
-            '::isArray',
-            'Logger'
-        ],
-        '.Class': [
-            '.',
-            '::isClass',
-            '::isInstance'
-        ]
-    },
-    '.ObjectMixin',
-    '.Object',
-    '.Array!check,derive,iterate',
-    '.Function!modargs'
-]).$export(function(getCurrentModuleData, isArray, Logger, Class, isClass, isInstance, ObjectMixin, Obj, Arr, Fn) {
+JARS.module('lang.Mixin').$import(['.ObjectMixin', '.Object', '.Array!Check,Derive,Iterate', '.Function!Modargs', {
+    System: ['Modules::getCurrentModuleData', '::isArray', 'Logger'],
+    '.Class': ['.', '::isClass', '::isInstance']
+}]).$export(function(ObjectMixin, Obj, Arr, Fn, getCurrentModuleData, isArray, Logger, Class, isClass, isInstance) {
     'use strict';
 
     var RECEIVER_MISSING = 0,

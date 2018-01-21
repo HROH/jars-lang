@@ -1,13 +1,6 @@
-JARS.module('lang.String').$import([
-    {
-        System: [
-            '::isA',
-            '::isString'
-        ]
-    },
-    '.Array!manipulate,reduce',
-	'.!String'
-]).$export(function(isA, isString, Arr) {
+JARS.module('lang.String').$import([{
+    System: ['::isA', '::isString']
+}, '.Array!Manipulate,Reduce', '.!']).$export(function(isA, isString, Arr) {
     'use strict';
 
     var lang = this,
