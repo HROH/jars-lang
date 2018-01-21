@@ -15,7 +15,7 @@ JARS.module('lang.Class.Singleton').$export(function() {
             return !!this.singleton();
         },
 
-        createSingletonSubClass: function(name, proto, staticProperties, args) {
+        createSingletonSubclass: function(name, proto, staticProperties, args) {
             return toSingleton(ClassFactory(name, proto, staticProperties, args).extendz(this));
         }
     });

@@ -20,7 +20,7 @@ JARS.module('lang.Class.Final').$export(function() {
          *
          * @return {(Class|undefined)}
          */
-        createFinalSubClass: function(name, proto, staticProperties) {
+        createFinalSubclass: function(name, proto, staticProperties) {
             return Final(name, proto, staticProperties).extendz(this);
         }
     });
@@ -37,10 +37,10 @@ JARS.module('lang.Class.Final').$export(function() {
         return Class;
     }
 
-    ClassFactory.isExtendableWhen(superClassIsNotFinal, 'The given SuperClass: "${superClassHash}" is final and can\'t be extended!');
+    ClassFactory.isExtendableWhen(superclassIsNotFinal, 'The given Superclass: "${superclassHash}" is final and can\'t be extended!');
 
-    function superClassIsNotFinal(data) {
-        return !data.SuperClass.isFinal();
+    function superclassIsNotFinal(data) {
+        return !data.Superclass.isFinal();
     }
 
     function Final(name, proto, staticProperties) {

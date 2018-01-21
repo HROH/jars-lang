@@ -20,7 +20,7 @@ JARS.module('lang.Class.Abstract').$export(function() {
          *
          * @return {(Class|undefined)}
          */
-        createAbstractSubClass: function(name, proto, staticProperties) {
+        createAbstractSubclass: function(name, proto, staticProperties) {
             return Abstract(name, proto, staticProperties).extendz(this);
         }
     });
@@ -49,10 +49,10 @@ JARS.module('lang.Class.Abstract').$export(function() {
         return {};
     }
 
-    ClassFactory.isExtendableWhen(classIsNotAbstractOrSuperClassIsAbstract, 'The given SuperClass: "${superClassHash}" is not abstract and can\'t be extended by an abstract Class!');
+    ClassFactory.isExtendableWhen(classIsNotAbstractOrSuperclassIsAbstract, 'The given Superclass: "${superclassHash}" is not abstract and can\'t be extended by an abstract Class!');
 
-    function classIsNotAbstractOrSuperClassIsAbstract(data) {
-        return !data.Class.isAbstract() || data.SuperClass.isAbstract();
+    function classIsNotAbstractOrSuperclassIsAbstract(data) {
+        return !data.Class.isAbstract() || data.Superclass.isAbstract();
     }
 
     function Abstract(name, proto, staticProperties) {

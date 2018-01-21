@@ -84,16 +84,14 @@ JARS.module('lang.Class', ['Abstract', 'Final', 'Singleton']).$import([{
     function cleanupAfterProxy(instanceOrClass, instanceOrClassHidden, accessIdentifier) {
         instanceOrClassHidden.$inPrivileged = false;
 
-        instanceOrClassHidden[accessIdentifier].update(updateHiddenProperty, instanceOrClass);
-    }
+        instanceOrClassHidden[accessIdentifier].update(function updateHiddenProperty(value, property) {
+            /*jslint validthis: true */
+            var newValue = instanceOrClass[property];
 
-    function updateHiddenProperty(value, property) {
-        /*jslint validthis: true */
-        var newValue = this[property];
+            delete instanceOrClass[property];
 
-        delete this[property];
-
-        return newValue;
+            return newValue;
+        });
     }
 
     function proxyDestructed(destructedHash) {
@@ -206,13 +204,13 @@ JARS.module('lang.Class', ['Abstract', 'Final', 'Singleton']).$import([{
         return allClasses;
     }
 
-    function retrieveSubclasses(subClasses, subClassHash) {
-        var SubClass = getClass(subClassHash);
+    function retrieveSubclasses(subclasses, subclassHash) {
+        var Subclass = getClass(subclassHash);
 
-        subClasses.push(SubClass);
-        subClasses.merge(SubClass.getSubClasses(true));
+        subclasses.push(Subclass);
+        subclasses.merge(Subclass.getSubclasses(true));
 
-        return subClasses;
+        return subclasses;
     }
 
     function retrieveInstances(instances, instanceData) {
@@ -221,16 +219,12 @@ JARS.module('lang.Class', ['Abstract', 'Final', 'Singleton']).$import([{
         return instances;
     }
 
-    function retrieveSubClassInstances(instances, subClassHash) {
-        return instances.merge(getClass(subClassHash).getInstances(true));
+    function retrieveSubclassInstances(instances, subclassHash) {
+        return instances.merge(getClass(subclassHash).getInstances(true));
     }
 
-    function destructInstance(instance) {
-        instance.Class.destruct(instance);
-    }
-
-    function destructSubClass(SubClass) {
-        SubClass.destruct(SubClass);
+    function destructSubclass(Subclass) {
+        Subclass.destruct(Subclass);
     }
 
     ClassProtectedProperties = fromObject({
@@ -238,7 +232,7 @@ JARS.module('lang.Class', ['Abstract', 'Final', 'Singleton']).$import([{
 
         _$skipCtor: false,
 
-        _$superClassHash: '',
+        _$superclassHash: '',
 
         _$modBaseName: null,
 
@@ -251,24 +245,24 @@ JARS.module('lang.Class', ['Abstract', 'Final', 'Singleton']).$import([{
             var Class = this,
                 classHiddenProto = Class._$proto,
                 protoToOverride,
-                SuperClass = getClass(Class._$superClassHash),
-                superClassHiddenProto,
+                Superclass = getClass(Class._$superclassHash),
+                superclassHiddenProto,
                 superProto, superMethod, currentSuper;
 
             // Never override Class()-, constructor()-, $proxy()- and getHash()-methods
-            if (SuperClass && isFunction(method) && !excludeOverride.contains(methodName)) {
-                superClassHiddenProto = getHidden(SuperClass)[protectedIdentifier]._$proto;
+            if (Superclass && isFunction(method) && !excludeOverride.contains(methodName)) {
+                superclassHiddenProto = getHidden(Superclass)[protectedIdentifier]._$proto;
 
-                if (methodName in SuperClass.prototype) {
+                if (methodName in Superclass.prototype) {
                     protoToOverride = Class.prototype;
-                    superProto = SuperClass.prototype;
+                    superProto = Superclass.prototype;
                 }
-                else if (methodName in superClassHiddenProto) {
+                else if (methodName in superclassHiddenProto) {
                     protoToOverride = classHiddenProto;
-                    superProto = superClassHiddenProto;
+                    superProto = superclassHiddenProto;
                 }
 
-                // check if the method is overriding a method in the SuperClass.prototype and is not already overridden in the current Class.prototype
+                // check if the method is overriding a method in the Superclass.prototype and is not already overridden in the current Class.prototype
                 if (superProto && isFunction(superProto[methodName]) && superProto[methodName] !== method && (!hasOwn(protoToOverride, methodName) || protoToOverride[methodName] === method)) {
                     superMethod = function $super() {
                         return applyFunction(superProto[methodName], this, arguments);
@@ -277,7 +271,7 @@ JARS.module('lang.Class', ['Abstract', 'Final', 'Singleton']).$import([{
                     protoToOverride[methodName] = Fn.around(method, function beforeMethodCall() {
                         currentSuper = this.$super;
 
-                        // create a new temporary this.$super that uses the method of the SuperClass.prototype
+                        // create a new temporary this.$super that uses the method of the Superclass.prototype
                         this.$super = superMethod;
 
                     }, function afterMethodCall() {
@@ -319,7 +313,7 @@ JARS.module('lang.Class', ['Abstract', 'Final', 'Singleton']).$import([{
                 instances = classProtectedProps._$instances,
                 instanceHashPrefix, instanceHash, construct, returnValue, failingPredicate;
 
-            // Class._$isProto is true when a SubClass is inheriting over SubClass.extendz(SuperClass)
+            // Class._$isProto is true when a Subclass is inheriting over Subclass.extendz(Superclass)
             // In this case we don't need the constructor to be executed neither do we need a new instance to be saved
             if (classProtectedProps._$isProto) {
                 returnValue = instance;
@@ -403,36 +397,36 @@ JARS.module('lang.Class', ['Abstract', 'Final', 'Singleton']).$import([{
          *
          * @return {boolean}
          */
-        hasSuperClass: function() {
-            return !!this.getSuperClass();
+        hasSuperclass: function() {
+            return !!this.getSuperclass();
         },
         /**
          *
          *
          * @return {boolean}
          */
-        hasSubClasses: function() {
-            return this.getSubClasses().length > 0;
+        hasSubclasses: function() {
+            return this.getSubclasses().length > 0;
         },
         /**
          *
          *
-         * @param {Class} SuperClass
+         * @param {Class} Superclass
          *
          * @return {boolean}
          */
-        isSubClassOf: function(SuperClass) {
-            return isClass(SuperClass) && isA(this.prototype, SuperClass);
+        isSubclassOf: function(Superclass) {
+            return isClass(Superclass) && isA(this.prototype, Superclass);
         },
         /**
          *
          *
-         * @param {Class} SuperClass
+         * @param {Class} Superclass
          *
          * @return {boolean}
          */
-        isSuperClassOf: function(SubClass) {
-            return isClass(SubClass) && isA(SubClass.prototype, this);
+        isSuperclassOf: function(Subclass) {
+            return isClass(Subclass) && isA(Subclass.prototype, this);
         },
         /**
          *
@@ -442,7 +436,7 @@ JARS.module('lang.Class', ['Abstract', 'Final', 'Singleton']).$import([{
          * @return {boolean}
          */
         isOf: function(Class) {
-            return this === Class || this.isSubClassOf(Class);
+            return this === Class || this.isSubclassOf(Class);
         },
 
         isInstance: function(instance) {
@@ -465,7 +459,7 @@ JARS.module('lang.Class', ['Abstract', 'Final', 'Singleton']).$import([{
             return this.getModuleAccess().some(isModuleNameStartingWith, moduleName);
         },
 
-        createSubClass: function(name, proto, staticProperties) {
+        createSubclass: function(name, proto, staticProperties) {
             return ClassFactory(name, proto, staticProperties).extendz(this);
         },
         /**
@@ -508,68 +502,68 @@ JARS.module('lang.Class', ['Abstract', 'Final', 'Singleton']).$import([{
                 do {
                     baseName = Class.getModuleBaseName();
                     moduleAccess.contains(baseName) || moduleAccess.push(baseName);
-                    Class = Class.getSuperClass();
+                    Class = Class.getSuperclass();
                 } while (isClass(Class));
             }
 
             return moduleAccess;
         },
         /**
-         * @return {Class} the SuperClass of this Class
+         * @return {Class} the Superclass of this Class
          */
-        $getSuperClass: function() {
-            return getClass(this._$superClassHash);
+        $getSuperclass: function() {
+            return getClass(this._$superclassHash);
         },
         /**
-         * @return {Array.<Class>} an array of all SubClasses
+         * @return {Array.<Class>} an array of all Subclasses
          */
-        $getSubClasses: function(includeSubclasses) {
-            return includeSubclasses ? this._$subClassHashes.reduce(retrieveSubclasses, Arr()) : this._$subClassHashes.values().map(getClass);
+        $getSubclasses: function(includeSubclasses) {
+            return includeSubclasses ? this._$subclassHashes.reduce(retrieveSubclasses, Arr()) : this._$subclassHashes.values().map(getClass);
         },
         /**
          * Method to mimick classical inheritance in JS
          * It uses prototypal inheritance inside but makes developing easier
          * To call a parent-method use this.$super(arg1, arg2, ...)
          *
-         * Note: The SuperClass has to be created with lang.Class()
+         * Note: The Superclass has to be created with lang.Class()
          *
          * Example:
          *
-         *		var MySubClass = lang.Class('MySubClass', {
+         *		var MySubclass = lang.Class('MySubclass', {
          *			construct: function() {
          *				//constructor-code goes here...
-         *				this.$super(arg1, arg2) // Call the constructor of the SuperClass
+         *				this.$super(arg1, arg2) // Call the constructor of the Superclass
          *			},
          *
          *			myMethod: function(param) {
          *				// do something...
-         *				this.$super(param) // Call the myMethod-method of the SuperClass
+         *				this.$super(param) // Call the myMethod-method of the Superclass
          *			}
          *		}).extendz(MyClass);
          *
-         * For simplification you can use MyClass.createSubClass('MySubClass', ...)
+         * For simplification you can use MyClass.createSubclass('MySubclass', ...)
          *
          *
-         * @param {Class} SuperClass
+         * @param {Class} Superclass
          *
          * @return {Class}
          */
-        $extendz: function(SuperClass, proto, staticProperties) {
+        $extendz: function(Superclass, proto, staticProperties) {
             var Class = this,
                 data = {
                     Class: Class,
-                    SuperClass: SuperClass
+                    Superclass: Superclass
                 },
-                superClassHiddenProtectedProps, message, failingPredicate;
+                superclassHiddenProtectedProps, message, failingPredicate;
 
             failingPredicate = extensionPredicates.find(predicateFails, data);
 
             if (failingPredicate) {
                 message = 'The Class can\'t be extended! ' + failingPredicate.message;
-                SuperClass = data.SuperClass;
+                Superclass = data.Superclass;
 
                 Class.logger.error(message, {
-                    superClassHash: SuperClass && SuperClass.getHash()
+                    superclassHash: Superclass && Superclass.getHash()
                 });
 
                 Class = data.Class;
@@ -577,24 +571,24 @@ JARS.module('lang.Class', ['Abstract', 'Final', 'Singleton']).$import([{
             else {
                 buildPrototypeMapping(Class, proto);
 
-                superClassHiddenProtectedProps = getHidden(SuperClass)[protectedIdentifier];
-                // add SuperClass reference
-                Class._$superClassHash = SuperClass.getHash();
-                // extend own private/protected prototype with that of the SuperClass
-                Class._$proto.extend(superClassHiddenProtectedProps._$proto);
-                // add SubClass reference in the SuperClass
-                superClassHiddenProtectedProps._$subClassHashes[Class.getHash()] = Class.getHash();
+                superclassHiddenProtectedProps = getHidden(Superclass)[protectedIdentifier];
+                // add Superclass reference
+                Class._$superclassHash = Superclass.getHash();
+                // extend own private/protected prototype with that of the Superclass
+                Class._$proto.extend(superclassHiddenProtectedProps._$proto);
+                // add Subclass reference in the Superclass
+                superclassHiddenProtectedProps._$subclassHashes[Class.getHash()] = Class.getHash();
 
                 // Prevent the default constructor and objectHash-generation to be executed
-                superClassHiddenProtectedProps._$isProto = true;
-                // Create a new instance of the SuperClass and merge it with the current prototype
+                superclassHiddenProtectedProps._$isProto = true;
+                // Create a new instance of the Superclass and merge it with the current prototype
                 // to override in the correct order
-                Class.prototype = Obj.merge(new SuperClass(), Class.prototype);
+                Class.prototype = Obj.merge(new Superclass(), Class.prototype);
                 // end inheriting
-                superClassHiddenProtectedProps._$isProto = false;
+                superclassHiddenProtectedProps._$isProto = false;
 
-                // extend Class with static methods of SuperClass
-                Obj.extend(Class, staticProperties || {}, SuperClass);
+                // extend Class with static methods of Superclass
+                Obj.extend(Class, staticProperties || {}, Superclass);
 
                 // Check if methods in the public and the protected prototype were overridden
                 // and do it properly so that this.$super() works in instances
@@ -610,7 +604,7 @@ JARS.module('lang.Class', ['Abstract', 'Final', 'Singleton']).$import([{
             var instances = this._$instances.reduce(retrieveInstances, Arr());
 
             if (includeSubclasses) {
-                instances = this._$subClassHashes.reduce(retrieveSubClassInstances, instances);
+                instances = this._$subclassHashes.reduce(retrieveSubclassInstances, instances);
             }
 
             return instances;
@@ -650,83 +644,88 @@ JARS.module('lang.Class', ['Abstract', 'Final', 'Singleton']).$import([{
          * @return {Class}
          */
         $destruct: function(instance) {
-            var Class = this,
-                SuperClass = getClass(Class._$superClassHash),
-                instances = Class._$instances,
-                destructors,
-                hash;
+            var Class = this;
 
             if (isInstance(instance)) {
-                hash = instance.getHash();
-
-                if (isA(instance, Class) && hasOwn(instances, hash)) {
-                    destructors = instances[hash].$destructors;
-
-                    do {
-                        destructors.mergeUnique(getHidden(Class)[protectedIdentifier]._$destructors);
-                        Class = Class.getSuperClass();
-                    } while (Class);
-
-                    while (destructors.length) {
-                        proxy(instance, destructors.shift(), true);
-                    }
-
-                    delete instances[hash];
-                }
-                else if (instance.Class !== Class) {
-                    instance.Class.destruct(instance);
-                }
-                else {
-                    Class.logger.warn('"' + hash + '" is already destructed');
-                }
-
-                return this;
+                destructInstance(instance, Class);
             }
-            /* */
-            else if (instance === Class) {
-                hash = Class.getHash();
-
-                Class.getInstances().each(destructInstance);
-
-                Class.getSubClasses().each(destructSubClass);
-
-                if (SuperClass) {
-                    delete getHidden(SuperClass)[protectedIdentifier]._$subClassHashes[hash];
-                }
-
-                metaClassSandbox.remove(classBluePrint.join(Class.getClassName()));
-
-                delete Classes[hash];
-
-                return undefined;
+            else {
+                destructClass(Class);
             }
-            /* */
+
+            return Class;
         }
     });
 
+    function destructClass(Class) {
+        var classHash = Class.getHash(),
+            Superclass = getClass(Class._$superclassHash);
+
+        Class.getInstances().each(function(instance) {
+            destructInstance(instance, Class);
+        });
+
+        Class.getSubclasses().each(destructSubclass);
+
+        if (Superclass) {
+            delete getHidden(Superclass)[protectedIdentifier]._$subclassHashes[classHash];
+        }
+
+        metaClassSandbox.remove(classBluePrint.join(Class.getClassName()));
+
+        delete Classes[classHash];
+    }
+
+    function destructInstance(instance, Class) {
+        var instanceHash = instance.getHash(),
+            instances = Class._$instances,
+            destructors;
+
+        if (isA(instance, Class) && hasOwn(instances, instanceHash)) {
+            destructors = instances[instanceHash].$destructors;
+
+            do {
+                destructors.mergeUnique(getHidden(Class)[protectedIdentifier]._$destructors);
+                Class = Class.getSuperclass();
+            } while (Class);
+
+            while (destructors.length) {
+                proxy(instance, destructors.shift(), true);
+            }
+
+            delete instances[instanceHash];
+        }
+        else if (instance.Class !== Class) {
+            instance.Class.destruct(instance);
+        }
+        else {
+            Class.logger.warn('"' + instanceHash + '" is already destructed');
+        }
+    }
+
     isExtendableWhen(function superclassIsGiven(data) {
-        return isClass(data.SuperClass);
-    }, 'There is no SuperClass given!');
+        return isClass(data.Superclass);
+    }, 'There is no Superclass given!');
 
     isExtendableWhen(function superclassIsNotSelf(data) {
-        return data.SuperClass !== data.Class;
+        return data.Superclass !== data.Class;
     }, 'The Class can\'t extend itself!');
 
-    isExtendableWhen(function classHasNoSuperClass(data) {
-        var hasNoSuperClass = !data.Class.hasSuperClass();
+    isExtendableWhen(function classHasNoSuperclass(data) {
+        var hasNoSuperclass = !data.Class.hasSuperclass();
 
-        hasNoSuperClass || (data.SuperClass = data.Class.getSuperClass());
+        hasNoSuperclass || (data.Superclass = data.Class.getSuperclass());
 
-        return hasNoSuperClass;
-    }, 'The Class already has the SuperClass: "${superClassHash}"!');
+        return hasNoSuperclass;
+    }, 'The Class already has the Superclass: "${superclassHash}"!');
 
-    isExtendableWhen(function classHasNoInstancesAndSubClasses(data) {
-        return !data.Class.getInstances().length && !data.Class.hasSubClasses();
-    }, 'The Class already has instances or SubClasses!');
+    isExtendableWhen(function classHasNoInstancesAndSubclasses(data) {
+        return !data.Class.getInstances().length && !data.Class.hasSubclasses();
+    }, 'The Class already has instances or Subclasses!');
 
-    isExtendableWhen(function superclassIsNoSubClassOfClass(data) {
-        return !data.SuperClass.isSubClassOf(data.Class);
-    }, 'The given SuperClass: "${superClassHash}" is already inheriting from this Class!');
+    isExtendableWhen(function superclassIsNoSubclassOfClass(data) {
+        return !data.Superclass.isSubclassOf(data.Class);
+    }, 'The given Superclass: "${superclassHash}" is already inheriting from this Class!');
 
     function predicateFails(predicateData) {
         /*jslint validthis: true */
@@ -961,7 +960,7 @@ JARS.module('lang.Class', ['Abstract', 'Final', 'Singleton']).$import([{
 
                     _$modName: moduleName,
 
-                    _$subClassHashes: Obj(),
+                    _$subclassHashes: Obj(),
 
                     _$proto: fromObject({
                         $proxy: createProxyFor('class', {

@@ -82,7 +82,7 @@ JARS.module('lang.Mixin').$import(['.ObjectMixin', '.Object', '.Array!Check,Deri
     }).extendz(ObjectMixin);
 
     function isReceiverAllowed(receiver, allowedClass) {
-        return receiver === allowedClass || allowedClass.isSuperClassOf(receiver) || allowedClass.isInstance(receiver);
+        return receiver === allowedClass || allowedClass.isSuperclassOf(receiver) || allowedClass.isInstance(receiver);
     }
 
     function mixIntoReceiver(mixIn) {
