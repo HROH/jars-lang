@@ -1,80 +1,66 @@
-JARS.module('lang.Mixin').$import(['.ObjectMixin', '.Object', '.Array!Check,Derive,Iterate', '.Function!Modargs', {
-    System: ['Modules::getCurrentModuleData', '::isArray', 'Logger'],
+JARS.module('lang.Mixin').$import(['System::isArray', '.ObjectMixin', '.Object.Extend::extend', '.Function.Modargs::partial', {
+    '.Array': ['Iterate::each', 'Derive::filter', 'Check::every'],
     '.Class': ['.', '::isClass', '::isInstance']
-}]).$export(function(ObjectMixin, Obj, Arr, Fn, getCurrentModuleData, isArray, Logger, Class, isClass, isInstance) {
+}]).$export(function(isArray, ObjectMixin, extend, partial, each, filter, every, Class, isClass, isInstance) {
     'use strict';
 
-    var RECEIVER_MISSING = 0,
-        RECEIVER_NOT_ALLOWED = 1,
-        mixinTemplates = [],
+    var MSG_RECEIVER_TYPE_MISMATCH = 'The given receiver "${receiver}" is not part or instance of the allowed Classes!',
         Mixin;
-
-    mixinTemplates[RECEIVER_MISSING] = 'There is no receiver given!';
-    mixinTemplates[RECEIVER_NOT_ALLOWED] = 'The given receiver "${rec}" is not part or instance of the allowed Classes!';
 
     Mixin = Class('Mixin', {
         $: {
             construct: function(mixinName, toMix, options) {
-                var allowedClasses;
+                this.$super(mixinName, toMix, options);
 
                 options = options || {};
 
-                this.$super(mixinName, toMix, options);
-
-                allowedClasses = options.classes;
-
-                this._$allowedClasses = Arr.filter(isArray(allowedClasses) ? allowedClasses : [allowedClasses], isClass);
+                this._$allowedClasses = filter(isArray(options.classes) ? options.classes : [options.classes], isClass);
                 this._$destructor = options.destructor;
             },
 
-            mixInto: function(receiver) {
-                var logger = this._$logger,
-                    isReceiverAllowedForMixin = Fn.partial(isReceiverAllowed, receiver),
-                    toMix = this._$toMix,
-                    allowedClasses = this._$allowedClasses,
-                    destructor = this._$destructor,
-                    objectToExtend;
+            canMixin: function(receiver) {
+                var canMixin = this.$super(receiver);
 
-                if (receiver) {
-                    if (this._$neededMixins.length) {
-                        this._$neededMixins.each(mixIntoReceiver, receiver);
-                    }
+                if(canMixin) {
+                    canMixin = every(this._$allowedClasses, partial(isReceiverAllowed, receiver));
 
-                    if (Arr.every(allowedClasses, isReceiverAllowedForMixin)) {
-                        if (isClass(receiver)) {
-                            objectToExtend = receiver.prototype;
-                            receiver.addDestructor(destructor);
-                        }
-                        else {
-                            objectToExtend = receiver;
-
-                            if (isInstance(receiver)) {
-                                receiver.Class.addDestructor(destructor, receiver);
-                            }
-                        }
-
-                        objectToExtend && Obj.extend(objectToExtend, toMix);
-                    }
-                    else {
-                        logger.warn(RECEIVER_NOT_ALLOWED, {
-                            rec: (isClass(receiver) || isInstance(receiver)) ? receiver.getHash() : receiver
+                    if(!canMixin) {
+                        this._$logger.warn(MSG_RECEIVER_TYPE_MISMATCH, {
+                            receiver: (isClass(receiver) || isInstance(receiver)) ? receiver.getHash() : receiver
                         });
                     }
                 }
-                else {
-                    logger.warn(RECEIVER_MISSING);
+
+                return canMixin;
+            },
+
+            mixInto: function(receiver) {
+                var destructor = this._$destructor,
+                    objectToExtend;
+
+                if (this.canMixin(receiver)) {
+                    this._$prepareMixin(receiver);
+
+                    if (isClass(receiver)) {
+                        objectToExtend = receiver.prototype;
+                        receiver.addDestructor(destructor);
+                    }
+                    else {
+                        objectToExtend = receiver;
+
+                        if (isInstance(receiver)) {
+                            receiver.Class.addDestructor(destructor, receiver);
+                        }
+                    }
+
+                    extend(objectToExtend, this._$toMix);
                 }
 
                 return receiver;
-            },
-
-            getName: function() {
-                return this._$name;
             }
         },
 
         _$: {
-
             allowedClasses: null,
 
             destructor: null,
@@ -85,20 +71,19 @@ JARS.module('lang.Mixin').$import(['.ObjectMixin', '.Object', '.Array!Check,Deri
         return receiver === allowedClass || allowedClass.isSuperclassOf(receiver) || allowedClass.isInstance(receiver);
     }
 
-    function mixIntoReceiver(mixIn) {
-        /*jslint validthis: true */
-        mixIn.mixInto(this);
-    }
-
     /**
      * Define a mixin-method that mixes the Mixin into the Class
      * It is available for every Class created with lang.Class()
      * as soon as this module is loaded
      */
-    Class.addStatic('mixin', function() {
-        Arr.filter(arguments, Mixin.isInstance, Mixin).each(mixIntoReceiver, this);
+    Class.addStaticMethod('mixin', function() {
+        var Class = this;
 
-        return this;
+        each(filter(arguments, Mixin.isInstance, Mixin), function(mixin) {
+            mixin.mixInto(Class);
+        });
+
+        return Class;
     });
 
     return Mixin;

@@ -1,11 +1,10 @@
 JARS.module('lang.ObjectMixin').$import([{
     System: ['Modules::getCurrentModuleData', '::isArray', 'Logger'],
-    '.Class': ['.', '::isClass', '::isInstance']
-}, '.Object', '.Array!Check,Derive,Iterate', '.Function!Modargs']).$export(function(getCurrentModuleData, isArray, Logger, Class, isClass, isInstance, Obj, Arr) {
+    '.Array': ['Iterate::each', 'Derive::filter', 'Check::every']
+}, '.Object.Extend::extend', '.Class']).$export(function(getCurrentModuleData, isArray, Logger, each, filter, every, extend, Class) {
     'use strict';
 
-    var RECEIVER_MISSING = 'There is no receiver given!',
-        RECEIVER_NOT_ALLOWED = 'The given receiver "${rec}" is not part or instance of the allowed Classes!',
+    var MSG_RECEIVER_MISSING = 'There is no receiver given!',
         ObjectMixin;
 
     ObjectMixin = Class('ObjectMixin', {
@@ -13,25 +12,31 @@ JARS.module('lang.ObjectMixin').$import([{
             construct: function(mixinName, toMix, options) {
                 options = options || {};
 
-                this._$name = mixinName;
-                this._$toMix = Obj.from(toMix);
-                this._$neededMixins = Arr.filter(options.depends || [], ObjectMixin.isInstance, ObjectMixin);
-                this._$logger = new Logger(this.Class.getClassName() + ' "#<' + getCurrentModuleData().moduleName + ':' + mixinName + '>"');
+                this._$name = this.Class.getClassName() + ' #<' + getCurrentModuleData().moduleName + ':' + mixinName + '>';
+                this._$toMix = toMix;
+                this._$neededMixins = filter(options.depends || [], ObjectMixin.isInstance, ObjectMixin);
+                this._$logger = new Logger(this._$name);
+            },
+
+            canMix: function(receiver) {
+                var canMix = false;
+
+                if(receiver) {
+                    canMix = every(this._$neededMixins, function(mixin) {
+                        return mixin.canMix(receiver);
+                    });
+                }
+                else {
+                    this._$logger.warn(MSG_RECEIVER_MISSING);
+                }
+
+                return canMix;
             },
 
             mixInto: function(receiver) {
-                var logger = this._$logger,
-                    toMix = this._$toMix;
-
-                if (receiver) {
-                    if (this._$neededMixins.length) {
-                        this._$neededMixins.each(mixIntoReceiver, receiver);
-                    }
-
-                    Obj.extend(receiver, toMix);
-                }
-                else {
-                    logger.warn(RECEIVER_MISSING);
+                if (this.canMix(receiver)) {
+                    this._$prepareMixin(receiver);
+                    extend(receiver, this._$toMix);
                 }
 
                 return receiver;
@@ -49,14 +54,15 @@ JARS.module('lang.ObjectMixin').$import([{
 
             toMix: null,
 
-            neededMixins: null
+            neededMixins: null,
+
+            prepareMixin: function(receiver) {
+                each(this._$neededMixins, function(mixin) {
+                    mixin.mixInto(receiver);
+                });
+            }
         }
     });
-
-    function mixIntoReceiver(mixin) {
-        /*jslint validthis: true */
-        mixin.mixInto(this);
-    }
 
     return ObjectMixin;
 });
