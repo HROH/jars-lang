@@ -4,7 +4,7 @@ JARS.module('lang.Class.Singleton').$export(function() {
     var ClassFactory = this,
         classesSingleton = {};
 
-    ClassFactory.addStatic({
+    ClassFactory.addStaticMethods({
         singleton: function() {
             return classesSingleton[this.getHash()];
         },
@@ -36,7 +36,7 @@ JARS.module('lang.Class.Singleton').$export(function() {
         return toSingleton(ClassFactory(name, proto, staticProperties), args);
     }
 
-    ClassFactory.isInstanceableWhen(function(Class) {
+    ClassFactory.isNewableWhen(function(Class) {
         return !Class.hasSingleton();
     }, function(Class) {
         return Class.singleton();

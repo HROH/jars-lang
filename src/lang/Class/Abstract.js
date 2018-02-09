@@ -4,7 +4,7 @@ JARS.module('lang.Class.Abstract').$export(function() {
     var ClassFactory = this,
         classesIsAbstract = {};
 
-    ClassFactory.addStatic({
+    ClassFactory.addStaticMethods({
         /**
          * @return {Boolean} whether this Class is an abstract Class
          */
@@ -39,7 +39,7 @@ JARS.module('lang.Class.Abstract').$export(function() {
 
     // If Class is an abstract Class return an empty Object
     // Returning undefined won't work because of the function behaviour in combination with 'new'
-    ClassFactory.isInstanceableWhen(classIsNotAbstract, returnEmptyObject, 'You can\'t create a new instance of an abstract Class.');
+    ClassFactory.isNewableWhen(classIsNotAbstract, returnEmptyObject, 'You can\'t create a new instance of an abstract Class.');
 
     function classIsNotAbstract(Class) {
         return !Class.isAbstract();

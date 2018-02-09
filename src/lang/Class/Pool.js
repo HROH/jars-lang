@@ -1,4 +1,4 @@
-JARS.module('lang.Class.Pool').$import('..Object!Info').$export(function(Obj) {
+JARS.module('lang.Class.Pool').$import('..Object!Extend,Info').$export(function(Obj) {
     'use strict';
 
     var Class = this,
@@ -23,7 +23,7 @@ JARS.module('lang.Class.Pool').$import('..Object!Info').$export(function(Obj) {
                 if (PoolClass.isInstance(instance) && Obj.hasOwn(this._$reservedInstances, instance.getHash())) {
                     delete this._$reservedInstances[instance.getHash()];
 
-                    PoolClass.destruct(instance);
+                    PoolClass.destructInstance(instance);
 
                     if (Obj.size(this._$reservedInstances) + this._$freeInstances.length < this._$poolSize) {
                         delete instance.getHash;

@@ -4,7 +4,7 @@ JARS.module('lang.Class.Final').$export(function() {
     var ClassFactory = this,
         classesIsFinal = {};
 
-    ClassFactory.addStatic({
+    ClassFactory.addStaticMethods({
         /**
          * @return {Boolean} whether this Class is a final Class
          */
