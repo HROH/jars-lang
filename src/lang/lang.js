@@ -15,6 +15,9 @@ JARS.module('lang', [
     'Object.*',
     'operations.*',
     'String.*',
+    'transcollectors.*',
+    'transducers',
+    'transformer.*',
     'Type.*'
 ]).$import({
     System: ['::isString', '::$$internals']
