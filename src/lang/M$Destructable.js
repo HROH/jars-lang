@@ -3,7 +3,7 @@ JARS.module('lang.M$Destructable').$import('.Mixin').$export(function(Mixin) {
 
     var M$Destructable = new Mixin('Destructable', {
         destruct: function() {
-            this.Class.destruct(this);
+            this.Class.destructInstance(this);
         }
     });
 
