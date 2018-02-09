@@ -1,9 +1,11 @@
-JARS.module('lang.Array.Manipulate').$import(['System::isArrayLike', '.!Index,Iterate', '..Object!Derive']).$export(function(isArrayLike, Arr, Obj) {
+JARS.module('lang.Array.Manipulate').$import(['System::isArrayLike', '.::enhance', '.Iterate::forEach', {
+    '.Search': ['::contains', '::indexOf'],
+    '..Function': ['::negate', 'Modargs::partial'],
+    '..transducers': ['::transduce', '::filter']
+}, '..transcollectors.Array']).$export(function(isArrayLike, enhance, forEach, contains, indexOf, negate, partial, transduce, filter, ArrayCollector) {
     'use strict';
 
-    var forEach = Arr.forEach;
-
-    Arr.enhance({
+    return enhance({
         merge: function(array) {
             if (isArrayLike(array)) {
                 this.push.apply(this, array);
@@ -12,16 +14,10 @@ JARS.module('lang.Array.Manipulate').$import(['System::isArrayLike', '.!Index,It
             return this;
         },
 
-        mergeUnique: function(array) {
-            var arr = this;
+        mergeUnique: function(sourceArray) {
+            var destArray = this;
 
-            forEach(array, function(item) {
-                if (!Arr.contains(arr, item)) {
-                    arr.push(item);
-                }
-            });
-
-            return this;
+            return transduce(filter(negate(partial(contains, destArray))), ArrayCollector.step, destArray, sourceArray);
         },
 
         removeAll: function(array) {
@@ -30,7 +26,7 @@ JARS.module('lang.Array.Manipulate').$import(['System::isArrayLike', '.!Index,It
             forEach(array, function(item) {
                 var index;
 
-                while ((index = Arr.indexOf(arr, item)) != -1) {
+                while ((index = indexOf(arr, item)) != -1) {
                     arr.splice(index, 1);
                 }
             });
@@ -38,6 +34,4 @@ JARS.module('lang.Array.Manipulate').$import(['System::isArrayLike', '.!Index,It
             return this;
         }
     });
-
-    return Obj.extract(Arr, ['merge', 'mergeUnique', 'removeAll']);
 });

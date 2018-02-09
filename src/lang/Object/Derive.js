@@ -1,89 +1,41 @@
-JARS.module('lang.Object.Derive').$import(['System::isNil', '..Array!Reduce', '.!Reduce', '..Function::identity']).$export(function(isNil, Arr, Obj, identity) {
+JARS.module('lang.Object.Derive').$import(['.::enhance', '.Info::prop', '..transcollectors.Object', {
+    '..transducers': ['::transduce', '::intoObject', '::map'],
+    'lang.Type.Method.Object': ['::withCallback', '::withTransducer', '::withAssert']
+}]).$export(function(enhance, prop, ObjectCollector, transduce, intoObject, map, withCallback, withTransducer, withAssert) {
     'use strict';
 
-    Obj.enhance({
+    return enhance({
         /**
          * @param {Array} keys
          *
          * @return {Object}
          */
-        extract: function(keys) {
+        extract: withAssert('extract', function(keys) {
             var object = this;
 
-            return Arr.reduce(keys, function(extractedObject, key) {
-                extractedObject[key] = Obj.hasOwn(object, key) ? object[key] : undefined;
-
-                return extractedObject;
-            }, new Obj());
-        },
+            return intoObject(map(function(key) {
+                return [key, prop(object, key)];
+            }), keys);
+        }),
         /**
          * @param {Function} callback
          * @param {*} context
          *
          * @return {Object}
          */
-        filter: transduceWith({
-            init: createObject,
-
-            step: filterProperty,
-
-            result: identity
-        }, true),
+        filter: withCallback('filter'),
         /**
          * @param {Function} callback
          * @param {*} context
          *
          * @return {Object}
          */
-        map: transduceWith({
-            init: createObject,
-
-            step: mapProperty,
-
-            result: identity
-        }, true),
+        map: withCallback('map'),
         /**
          * @return {Object}
          */
-        invert: transduceWith({
-            init: createObject,
-
-            step: invertProperty,
-
-            result: identity
-        })
+        invert: withTransducer('invert', ObjectCollector, map(function(input) {
+            return input.reverse();
+        }))
     });
-
-    function createObject() {
-        return new Obj();
-    }
-
-    function filterProperty(filteredObject, value, prop, result) {
-        if(result) {
-            filteredObject[prop] = value;
-        }
-    }
-
-    function mapProperty(mappedObject, value, prop, result) {
-        mappedObject[prop] = result;
-    }
-
-    function invertProperty(invertedObject, value, prop) {
-        invertedObject[value] = prop;
-    }
-
-    function transduceWith(transducer, applyCallback) {
-        return function transduce(callback, context) {
-	        var object = this,
-	            hasContext = applyCallback && !isNil(context);
-
-	        return transducer.result(Obj.reduce(object, function reducer(newObject, value, prop) {
-	            transducer.step(newObject, value, prop, hasContext ? callback.call(context, value, prop, object) : applyCallback && callback(value, prop, object));
-
-	            return newObject;
-	        }, transducer.init()));
-        };
-    }
-
-    return Obj.extract(Obj, ['extract', 'filter', 'map', 'invert']);
 });

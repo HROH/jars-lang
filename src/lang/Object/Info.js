@@ -1,57 +1,36 @@
-JARS.module('lang.Object.Info').$import(['.!Reduce,Derive', '..Array!Reduce']).$export(function(Obj, Arr) {
+JARS.module('lang.Object.Info').$import(['.::enhance', '.::hasOwn', '.Reduce::reduce', {
+    'lang.Array': ['::from', 'Reduce::reduce'],
+    'lang.Function.Modargs': ['::PLACEHOLDER', '::partial'],
+    'lang.Type.Method.Object': ['::withAssert', '::withTransducer'],
+    lang: ['transcollectors.Array', 'transducers::map']
+}]).$export(function(enhance, hasOwn, objectReduce, fromArray, arrayReduce, PLACEHOLDER, partial, withAssert, withTransducer, ArrayCollector, map) {
     'use strict';
 
-    var reduce = Obj.reduce;
-
-    Obj.enhance({
-        keys: function() {
-            return reduce(this, pushKey, Arr());
-        },
-
-        pairs: function() {
-            return reduce(this, pushKeyValue, Arr());
-        },
-
-        prop: function(key) {
-            var propList = key.split('.');
-
-            return Arr.reduce(propList, extractProperty, this);
-        },
-
-        size: function() {
-            return reduce(this, countProperties, 0);
-        },
-
-        values: function() {
-            return reduce(this, pushValue, Arr());
-        }
-    });
-
-    function extractProperty(obj, key) {
-        return (obj && Obj.hasOwn(obj, key)) ? obj[key] : undefined;
-    }
+    var withTransducerToArray = partial(withTransducer, PLACEHOLDER, ArrayCollector);
 
     function countProperties(size) {
         return ++size;
     }
 
-    function pushKey(array, value, key) {
-        array[array.length] = key;
+    return enhance({
+        keys: withTransducerToArray('keys', map(function(pair) {
+            return pair[0];
+        })),
 
-        return array;
-    }
+        pairs: withTransducerToArray('pairs', map(fromArray)),
 
-    function pushValue(array, value) {
-        array[array.length] = value;
+        prop: withAssert('prop', function(key) {
+            return arrayReduce(key.split('.'), function(obj, key) {
+                return (obj && hasOwn(obj, key)) ? obj[key] : undefined;
+            }, this);
+        }),
 
-        return array;
-    }
+        size: withAssert('size', function() {
+            return objectReduce(this, countProperties, 0);
+        }),
 
-    function pushKeyValue(array, value, key) {
-        array[array.length] = Arr(key, value);
-
-        return array;
-    }
-
-    return Obj.extract(Obj, ['keys', 'pairs', 'prop', 'size', 'values']);
+        values: withTransducerToArray('values', map(function(pair) {
+            return pair[1];
+        }))
+    });
 });

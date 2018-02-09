@@ -1,46 +1,9 @@
-JARS.module('lang.Array.Derive').$import([{
-    '..assert': ['::isNotNil', 'Type::isFunction']
-}, '.!Iterate', '..Object!Derive']).$export(function(assertIsNotNil, assertIsFunction, Arr, Obj) {
+JARS.module('lang.Array.Derive').$import(['.::enhance', 'lang.Type.Method.Array::withCallback']).$export(function(enhance, withCallback) {
     'use strict';
 
-    var forEach = Arr.forEach,
-        MSG_NO_FUNCTION = 'The callback is not a function';
+    return enhance({
+        filter: withCallback('filter'),
 
-    Arr.enhance({
-        filter: createDeriver(),
-
-        map: createDeriver(true)
+        map: withCallback('map')
     });
-
-    function createDeriver(isMapper) {
-        var assertionMessage = 'Array.prototype.' + (isMapper ? 'map' : 'filter') + ' called on null or undefined';
-
-        function derive(context, callback, ret) {
-            return isMapper ? function mapDeriver(item, idx, arr) {
-                ret.push(callback.call(context, item, idx, arr));
-            } : function filterDeriver(item, idx, arr) {
-                if (callback.call(context, item, idx, arr)) {
-                    ret.push(item);
-                }
-            };
-        }
-
-        function deriver(callback, context) {
-            /*jslint validthis: true */
-            var arr = this,
-                ret = new Arr();
-
-            assertIsNotNil(arr, assertionMessage);
-
-            assertIsFunction(callback, MSG_NO_FUNCTION);
-
-            forEach(arr, derive(context, callback, ret));
-
-            return ret;
-        }
-
-        return deriver;
-    }
-
-    return Obj.extract(Arr, ['filter', 'map']);
 });

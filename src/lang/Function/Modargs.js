@@ -1,12 +1,10 @@
-JARS.module('lang.Function.Modargs').$import([{
-    '.': ['::from', '::apply'],
-    '..Array': ['::from', '::reverse']
-}, 'System!', '..Object!Derive']).$export(function(fromFunction, applyFunction, fromArgs, reverseArray, config, Obj) {
+JARS.module('lang.Function.Modargs').$import(['.::enhance', '.::from', '.::apply', {
+    '..Array': ['::from', '::reverse'],
+    '..transducers': ['::intoArray', '::map']
+}]).$export(function(enhance, fromFunction, applyFunction, fromArgs, reverseArray, intoArray, map) {
     'use strict';
 
-    var Fn = this;
-
-    Fn.enhance({
+    var Modargs = enhance({
         flip: function() {
             var fn = this;
 
@@ -16,7 +14,7 @@ JARS.module('lang.Function.Modargs').$import([{
         },
 
         functional: function(arity) {
-            return Fn.curry(Fn.flip(this), arity);
+            return Modargs.curry(Modargs.flip(this), arity);
         },
 
         curry: function(arity) {
@@ -25,25 +23,15 @@ JARS.module('lang.Function.Modargs').$import([{
             arity = arity || fn.arity || fn.length;
 
             return fromFunction(arity < 2 ? fn : function curryFn() {
-                var args = fromArgs(arguments),
-                    result;
+                var args = fromArgs(arguments);
 
-                if (args.length >= arity) {
-                    result = applyFunction(fn, this, args);
-                }
-                else {
-                    result = fromFunction(function curriedFn() {
-                        return applyFunction(curryFn, this, args.concat(fromArgs(arguments)));
-                    }, arity - args.length);
-                }
-
-                return result;
+                return args.length >= arity ? applyFunction(fn, this, args) : fromFunction(function curriedFn() {
+                    return applyFunction(curryFn, this, args.concat(fromArgs(arguments)));
+                }, arity - args.length);
             }, arity);
         },
 
-        partial: function() {
-            return createArgumentsMapper(this, arguments, applyPartialArg);
-        },
+        partial: createArgumentsReplacer(true),
         /**
          * Store the arguments in placeholderArgs
          * They will be used in the call to func as default if no other arguments are available
@@ -60,21 +48,13 @@ JARS.module('lang.Function.Modargs').$import([{
          *	return a;
          * }).defaults(value);
          *
-         *
-         *
-         *
          */
-        defaults: function() {
-            return createArgumentsMapper(this, arguments, applyPlaceholderArg);
-        }
+        defaults: createArgumentsReplacer()
     }, {
-        placeholderArg: config.placeholderArg || {}
+        PLACEHOLDER: new PlaceholderArg()
     });
 
-
-    function isPlaceholderArg(arg) {
-        return arg === Fn.placeholderArg;
-    }
+    function PlaceholderArg() {}
 
     /**
      *
@@ -84,47 +64,24 @@ JARS.module('lang.Function.Modargs').$import([{
      *
      * @return {Function}
      */
-    function createArgumentsMapper(fn, args, mapFn) {
-        args = fromArgs(args);
+    function createArgumentsReplacer(isPartial) {
+        return function() {
+            var fn = this,
+                args = fromArgs(arguments);
 
-        return fromFunction(function mappedFn() {
-            var newArgs = fromArgs(arguments),
-                mappedArgs = args.map(mapFn, newArgs);
+            return fromFunction(function mappedFn() {
+                var replaceArgs = isPartial ? fromArgs(arguments) : args.slice();
 
-            return applyFunction(fn, this, mappedArgs.concat(newArgs));
-        }, fn.arity || fn.length);
+                return applyFunction(fn, this, intoArray(replacePlaceholders(replaceArgs), isPartial ? args : fromArgs(arguments)).concat(replaceArgs));
+            }, fn.arity || fn.length);
+        };
     }
 
-    /**
-     *
-     * @param {*} partialArg
-     *
-     * @return {*}
-     */
-    function applyPartialArg(partialArg) {
-        /*jslint validthis: true */
-        return isPlaceholderArg(partialArg) ? this.shift() : partialArg;
+    function replacePlaceholders(replaceArgs) {
+        return map(function(defaultArg) {
+            return defaultArg === Modargs.PLACEHOLDER ? replaceArgs.shift() : defaultArg;
+        });
     }
 
-    /**
-     *
-     * @param {*} placeholderArg
-     *
-     * @return {*}
-     */
-    function applyPlaceholderArg(placeholderArg) {
-        /*jslint validthis: true */
-        var newArgs = this,
-            newArg;
-
-        if (newArgs.length) {
-            newArg = newArgs.shift();
-
-            isPlaceholderArg(newArg) || (placeholderArg = newArg);
-        }
-
-        return placeholderArg;
-    }
-
-    return Obj.extract(Fn, ['curry', 'defaults', 'flip', 'functional', 'partial']);
+    return Modargs;
 });

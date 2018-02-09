@@ -1,17 +1,5 @@
-JARS.module('lang.Object.Manipulate').$import(['.!Derive,Iterate', '..Array!Reduce']).$export(function(Obj, Arr) {
+JARS.module('lang.Object.Manipulate').$import(['.::enhance', '.Iterate::each', '..Array.Reduce::reduce']).$export(function(enhance, each, reduce) {
     'use strict';
-
-    Obj.enhance({
-        update: function(callback, context) {
-            Obj.each(this, function updateProperty(value, property, object) {
-                object[property] = callback.call(context, value, property, object);
-            });
-        },
-
-        remove: function(keys) {
-            return Arr.reduce(keys, removeProperty, this);
-        }
-    });
 
     function removeProperty(object, key) {
         delete object[key];
@@ -19,5 +7,15 @@ JARS.module('lang.Object.Manipulate').$import(['.!Derive,Iterate', '..Array!Redu
         return object;
     }
 
-    return Obj.extract(Obj, ['update', 'remove']);
+    return enhance({
+        update: function(callback, context) {
+            each(this, function updateProperty(value, property, object) {
+                object[property] = callback.call(context, value, property, object);
+            });
+        },
+
+        remove: function(keys) {
+            return reduce(keys, removeProperty, this);
+        }
+    });
 });

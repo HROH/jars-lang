@@ -1,42 +1,12 @@
-JARS.module('lang.Function.Flow').$import([{
-    '.': ['::from', '::apply']
-}, 'System::env', '..Array::from', '..Object!Derive']).$export(function(fromFunction, applyFunction, env, fromArgs, Obj) {
+JARS.module('lang.Function.Flow').$import(['.::enhance', '.::from', '.::apply', 'System::env', '..Array::from']).$export(function(enhance, fromFunction, applyFunction, env, fromArgs) {
     'use strict';
 
-    var Fn = this,
-        global = env.global,
+    var global = env.global,
         defaultRegulatorOptions = {
             leading: true,
 
             trailing: true
         };
-
-    Fn.enhance({
-        debounce: function(ms, immediate) {
-            return createRegulatorFunction(this, ms, {
-                leading: immediate,
-
-                trailing: !immediate
-            }, true);
-        },
-
-        throttle: function(ms, options) {
-            return createRegulatorFunction(this, ms, options || defaultRegulatorOptions);
-        },
-
-        delay: function(ms) {
-            var fn = this;
-
-            return fromFunction(function delayedFn() {
-                var context = this,
-                    args = fromArgs(arguments);
-
-                global.setTimeout(function() {
-                    applyFunction(fn, context, args);
-                }, ms);
-            });
-        }
-    });
 
     /**
      *
@@ -82,5 +52,30 @@ JARS.module('lang.Function.Flow').$import([{
         }, fn.arity || fn.length);
     }
 
-    return Obj.extract(Fn, ['debounce', 'throttle', 'delay']);
+    return enhance({
+        debounce: function(ms, immediate) {
+            return createRegulatorFunction(this, ms, {
+                leading: immediate,
+
+                trailing: !immediate
+            }, true);
+        },
+
+        throttle: function(ms, options) {
+            return createRegulatorFunction(this, ms, options || defaultRegulatorOptions);
+        },
+
+        delay: function(ms) {
+            var fn = this;
+
+            return fromFunction(function delayedFn() {
+                var context = this,
+                    args = fromArgs(arguments);
+
+                global.setTimeout(function() {
+                    applyFunction(fn, context, args);
+                }, ms);
+            });
+        }
+    });
 });

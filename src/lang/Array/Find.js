@@ -1,75 +1,48 @@
-JARS.module('lang.Array.Find').$import(['System::isNumber', {
-    '..assert': ['::isNotNil', 'Type::isFunction']
-}]).$export(function(isNumber, assertIsNotNil, assertIsFunction) {
+JARS.module('lang.Array.Find').$import(['System::isNumber', '.::enhance', {
+    lang: ['Object::hasOwn', 'Type.Method.Array::withCallback', 'transcollectors.Result', 'transducers::filter', 'Function.Modargs::partial', {
+        'operations.Comparison': ['::lte', '::gte']
+    }]
+}]).$export(function(isNumber, enhance, hasOwn, withCallback, ResultCollector, filter, partial, lte, gte) {
     'use strict';
 
-    var MSG_NO_FUNCTION = 'The predicate is not a function',
-        Arr = this;
+    var transduceOptions = createTransduceOptions(),
+        reversedTransduceOptions = createTransduceOptions(true);
 
-    Arr.enhance({
-        find: createFinder(),
+    function createTransduceOptions(isReversed) {
+        return {
+            pre: partial(createFilter, isReversed),
 
-        findLast: createFinder(false, true),
-
-        findIndex: createFinder(true),
-
-        findLastIndex: createFinder(true, true)
-    });
-
-    function createFinder(returnIndex, last) {
-        var assertionMessage = 'Array.prototype.find' + (last ? 'Last' : '') + (returnIndex ? 'Index' : '') + ' called on null or undefined',
-            defaultReturn = returnIndex ? -1 : undefined;
-
-        return function finder(predicate, context, fromIndex) {
-            var arr = this,
-                len = arr.length >>> 0,
-                ret = defaultReturn,
-                idx;
-
-            assertIsNotNil(arr, assertionMessage);
-
-            assertIsFunction(predicate, MSG_NO_FUNCTION);
-
-            if (len > 0) {
-                idx = getFromIndex(fromIndex, last ? len - 1 : 0, len);
-
-                for (; last ? idx > 0 : idx < len; last ? idx-- : idx++) {
-                    if (idx in arr) {
-                        if (predicate.call(context, arr[idx], idx, arr)) {
-                            ret = returnIndex ? idx : arr[idx];
-
-                            break;
-                        }
-                    }
-                }
-            }
-
-            return ret;
+            collector: ResultCollector
         };
     }
 
-    function getFromIndex(fromIndex, defaultIndex, len) {
-        var idx = Number(fromIndex),
-            absIdx;
+    function createFilter(isReversed, data) {
+        return filter(function() {
+            hasOwn(data, 'startIndex') || (data.startIndex = getStartIndex(isReversed, data.extraArg, data.subject.length));
 
-        if (!isNumber(idx)) {
-            idx = defaultIndex;
-        }
-        else if (idx !== 0) {
-            absIdx = Math.floor(Math.abs(idx));
-            idx = idx > 0 ? absIdx : len - absIdx;
-        }
-
-        return idx;
+            return (isReversed ? lte : gte)(data.extraInput, data.startIndex);
+        });
     }
 
-    return {
-        find: Arr.find,
+    function getStartIndex(isReversed, startIndex, length) {
+        return isNumber(startIndex) ? getAbsoluteIndex(startIndex, length) : getDefaultIndex(isReversed, length);
+    }
 
-        findLast: Arr.findLast,
+    function getAbsoluteIndex(index, length) {
+        return gte(index, 0) ? index : length + index;
+    }
 
-        findIndex: Arr.findIndex,
+    function getDefaultIndex(isReversed, length) {
+        return isReversed ? length - 1 : 0;
+    }
 
-        findLastIndex: Arr.findLastIndex
-    };
+    return enhance({
+        find: withCallback('find', transduceOptions),
+
+        findLast: withCallback('findLast', reversedTransduceOptions),
+
+        findIndex: withCallback('findIndex', transduceOptions),
+
+        findLastIndex: withCallback('findLastIndex', reversedTransduceOptions)
+    });
 });

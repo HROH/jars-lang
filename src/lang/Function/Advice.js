@@ -1,34 +1,30 @@
-JARS.module('lang.Function.Advice').$import(['.::apply', '..Object!Derive']).$export(function(applyFunction, Obj) {
+JARS.module('lang.Function.Advice').$import(['.::apply', '.::from', '.::enhance']).$export(function(applyFunction, fromFunction, enhance) {
     'use strict';
 
-    var Fn = this;
-
-    Fn.enhance({
+    var Advice = enhance({
         after: function(executeAfterwards) {
-            return createAdvice(this, null, executeAfterwards);
+            return Advice.around(this, null, executeAfterwards);
         },
 
         before: function(executeBefore) {
-            return createAdvice(this, executeBefore);
+            return Advice.around(this, executeBefore, null);
         },
 
         around: function(executeBefore, executeAfterwards) {
-            return createAdvice(this, executeBefore, executeAfterwards);
+            var fn = this;
+
+            return fromFunction(function adviceFn() {
+                var context = this,
+                    result;
+
+                executeBefore && applyFunction(executeBefore, context, arguments);
+                result = applyFunction(fn, context, arguments);
+                executeAfterwards && applyFunction(executeAfterwards, context, arguments);
+
+                return result;
+            }, fn.arity || fn.length);
         }
     });
 
-    function createAdvice(fn, executeBefore, executeAfterwards) {
-        return Fn.from(function adviceFn() {
-            var context = this,
-                result;
-
-            executeBefore && applyFunction(executeBefore, context, arguments);
-            result = applyFunction(fn, context, arguments);
-            executeAfterwards && applyFunction(executeAfterwards, context, arguments);
-
-            return result;
-        }, fn.arity || fn.length);
-    }
-
-    return Obj.extract(Fn, ['before', 'after', 'around']);
+    return Advice;
 });

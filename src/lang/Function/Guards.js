@@ -1,11 +1,7 @@
-JARS.module('lang.Function.Guards').$import([{
-    '.': ['::from', '::apply']
-}, '..Object!Derive']).$export(function(fromFunction, applyFunction, Obj) {
+JARS.module('lang.Function.Guards').$import(['.::enhance', '.::from', '.::apply']).$export(function(enhance, fromFunction, applyFunction) {
     'use strict';
 
-    var Fn = this;
-
-    Fn.enhance({
+    var Guards = enhance({
         memoize: function(serializer) {
             var fn = this,
                 cache = {};
@@ -18,7 +14,7 @@ JARS.module('lang.Function.Guards').$import([{
         },
 
         once: function() {
-            return Fn.callN(this, 1);
+            return Guards.callN(this, 1);
         },
 
         callN: function(count) {
@@ -36,18 +32,11 @@ JARS.module('lang.Function.Guards').$import([{
         count = Math.round(Math.abs(count)) || 0;
 
         return fromFunction(function guardedFn() {
-            var unguarded = guardBefore ? called >= count : called < count,
-                result;
+            var unguarded = guardBefore ? called >= count : called < count;
 
-            if (unguarded) {
-                result = applyFunction(fn, this, arguments);
-            }
+            unguarded !== guardBefore && called++;
 
-            if (unguarded !== guardBefore) {
-                called++;
-            }
-
-            return result;
+            return unguarded ? applyFunction(fn, this, arguments) : undefined;
         });
     }
 
@@ -62,5 +51,5 @@ JARS.module('lang.Function.Guards').$import([{
         return JSON.stringify(args[0]);
     }
 
-    return Obj.extract(Fn, ['memoize', 'once', 'callN', 'blockN']);
+    return Guards;
 });

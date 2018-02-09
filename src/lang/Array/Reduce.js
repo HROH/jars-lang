@@ -1,58 +1,44 @@
-JARS.module('lang.Array.Reduce').$import({
-    '..assert': ['.', '::isNotNil', 'Type::isFunction']
-}).$export(function(assert, assertIsNotNil, assertIsFunction) {
+JARS.module('lang.Array.Reduce').$import(['.::enhance', '..assert', {
+    'lang.Type.Method': ['::withAssert', '::withCallbackAssert']
+}]).$export(function(enhance, assert, withAssert, withCallbackAssert) {
     'use strict';
 
-    var Arr = this,
-        MSG_NO_FUNCTION = 'The callback is not a function',
-        MSG_REDUCE_OF_EMPTY_ARRAY = 'Reduce of empty array with no initial value';
-
-    Arr.enhance({
-        reduce: createReduce(),
-
-        reduceRight: createReduce(true)
-    });
+    var MSG_REDUCE_OF_EMPTY_ARRAY = 'Reduce of empty array with no initial value';
 
     function createReduce(reduceRight) {
-        var assertionMessage = 'Array.prototype.reduce' + (reduceRight ? 'Right' : '') + ' called on null or undefined';
-
-        return function(callback, initialValue) {
+        return withAssert('Array', reduceRight ? 'reduceRight' : 'reduce', withCallbackAssert(function(callback, initialValue) {
             var arr = this,
-                len = arr.length >>> 0,
-                isValueSet = false,
-                idx = reduceRight ? len - 1 : 0,
-                ret;
+                length = arr.length >>> 0,
+                isValueSet = arguments.length > 1,
+                index = getStartIndex(reduceRight, length),
+                result = initialValue;
 
-            assertIsNotNil(arr, assertionMessage);
-
-            assertIsFunction(callback, MSG_NO_FUNCTION);
-
-            if (arguments.length > 1) {
-                ret = initialValue;
-                isValueSet = true;
-            }
-
-            for (; reduceRight ? idx >= 0 : idx < len; reduceRight ? --idx : ++idx) {
-                if (idx in arr) {
-                    if (isValueSet) {
-                        ret = callback(ret, arr[idx], idx, arr);
-                    }
-                    else {
-                        ret = arr[idx];
-                        isValueSet = true;
-                    }
+            while(canContinue(reduceRight, index, length)) {
+                if (index in arr) {
+                    result = isValueSet ? callback(result, arr[index], index, arr) : arr[index];
+                    isValueSet = true;
                 }
+
+                reduceRight ? --index : ++index;
             }
 
             assert(isValueSet, MSG_REDUCE_OF_EMPTY_ARRAY);
 
-            return ret;
-        };
+            return result;
+        }));
     }
 
-    return {
-        reduce: Arr.reduce,
+    function getStartIndex(reduceRight, length) {
+        return reduceRight ? length - 1 : 0;
+    }
 
-        reduceRight: Arr.reduceRight
-    };
+    function canContinue(reduceRight, index, length) {
+        return reduceRight ? index >= 0 : index < length;
+    }
+
+    return enhance({
+        reduce: createReduce(),
+
+        reduceRight: createReduce(true)
+    });
 });

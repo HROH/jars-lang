@@ -1,37 +1,25 @@
-JARS.module('lang.Object.Reduce').$export(function() {
+JARS.module('lang.Object.Reduce').$import(['.::enhance', '.::hasOwn', '..assert']).$export(function(enhance, hasOwn, assert) {
     'use strict';
 
-    var Obj = this;
+    var MSG_REDUCE_OF_EMPTY_OBJECT = 'Reduce of empty object with no initial value';
 
-    Obj.enhance({
+    return enhance({
         reduce: function(callback, initialValue) {
             var object = this,
-                isValueSet = false,
-                prop,
-                ret;
+                isValueSet = arguments.length > 1,
+                result = initialValue,
+                key;
 
-            if (arguments.length > 1) {
-                ret = initialValue;
-                isValueSet = true;
-            }
-
-            for (prop in object) {
-                if (Obj.hasOwn(object, prop)) {
-                    if (isValueSet) {
-                        ret = callback(ret, object[prop], prop, object);
-                    }
-                    else {
-                        ret = object[prop];
-                        isValueSet = true;
-                    }
+            for (key in object) {
+                if (hasOwn(object, key)) {
+                    result = isValueSet ? callback(result, object[key], key, object) : object[key];
+                    isValueSet = true;
                 }
             }
 
-            return ret;
+            assert(isValueSet, MSG_REDUCE_OF_EMPTY_OBJECT);
+
+            return result;
         }
     });
-
-    return {
-        reduce: Obj.reduce
-    };
 });

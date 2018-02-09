@@ -1,37 +1,15 @@
-JARS.module('lang.Array.Iterate').$import({
-    '..assert': ['::isNotNil', 'Type::isFunction']
-}).$export(function(assertIsNotNil, assertIsFunction) {
+JARS.module('lang.Array.Iterate').$import(['.::enhance', '..transcollectors.Empty', 'lang.Type.Method.Array::withCallback', {
+    'lang.Function.Modargs': ['::PLACEHOLDER', '::partial']
+}]).$export(function(enhance, Empty, withCallback, PLACEHOLDER, partial) {
     'use strict';
 
-    var Arr = this,
-        MSG_NO_FUNCTION = 'The callback is not a function',
-        assertionMessage = 'Array.prototype.forEach called on null or undefined';
+    var createLoop = partial(withCallback, PLACEHOLDER, {
+            collector: Empty
+        });
 
-    Arr.enhance({
-        each: function(callback, array) {
-            Arr.forEach(this, callback, array);
-        },
+    return enhance({
+        each: createLoop('each'),
 
-        forEach: function(callback, context) {
-            var arr = this,
-                idx = 0,
-                len = arr.length >>> 0;
-
-            assertIsNotNil(arr, assertionMessage);
-
-            assertIsFunction(callback, MSG_NO_FUNCTION);
-
-            while (idx < len) {
-                if (idx in arr) {
-                    callback.call(context, arr[idx], idx++, arr);
-                }
-            }
-        }
+        forEach: createLoop('forEach')
     });
-
-    return {
-        each: Arr.each,
-
-        forEach: Arr.forEach
-    };
 });

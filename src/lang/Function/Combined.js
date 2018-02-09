@@ -1,24 +1,44 @@
-JARS.module('lang.Function.Combined').$import([{
-    '.': ['::from', '::apply']
-}, 'System::isFunction', '..Array!Reduce', '..Object!Derive']).$export(function(fromFunction, applyFunction, isFunction, Arr, Obj) {
+JARS.module('lang.Function.Combined').$import(['.::enhance', '.::from', '.::apply', {
+    '..Array': ['::fromArguments', 'Reduce::reduce']
+}, 'System::isFunction']).$export(function(enhance, fromFunction, applyFunction, fromArgs, reduce, isFunction) {
     'use strict';
 
-    var Fn = this;
+    /**
+     *
+     * @param {Function} fn
+     * @param {Arguments} functions
+     * @param {Boolean} reversed
+     *
+     * @return {Function}
+     */
+    function createFunctionCombiner(fn, functions, reversed) {
+        functions.unshift(fn);
 
-    Fn.enhance({
+        reversed && (functions = functions.reverse());
+
+        return functions.length === 1 ? fn : fromFunction(function combinedFn(result) {
+            return reduce(functions, callNextWithResult, result);
+        }, fn.arity || fn.length);
+    }
+
+    function callNextWithResult(result, next) {
+        return isFunction(next) ? next(result) : result;
+    }
+
+    return enhance({
         compose: function() {
-            return createFunctionPipe(this, arguments, true);
+            return createFunctionCombiner(this, fromArgs(arguments), true);
         },
 
         pipeline: function() {
-            return createFunctionPipe(this, arguments);
+            return createFunctionCombiner(this, fromArgs(arguments));
         },
 
         wrap: function(wrapperFn) {
             var fn = this,
                 context;
 
-            function proceed() {
+            function next() {
                 var result = applyFunction(fn, context, arguments);
 
                 context = null;
@@ -29,33 +49,8 @@ JARS.module('lang.Function.Combined').$import([{
             return fromFunction(function wrappedFn() {
                 context = this;
 
-                return applyFunction(wrapperFn, context, [proceed, arguments]);
+                return applyFunction(wrapperFn, context, [next, arguments]);
             }, wrapperFn.arity || wrapperFn.length);
         }
     });
-
-    /**
-     *
-     * @param {Function} fn
-     * @param {Arguments} functions
-     * @param {Boolean} reversed
-     *
-     * @return {Function}
-     */
-    function createFunctionPipe(fn, functions, reversed) {
-        functions = Arr.filter(functions, isFunction);
-        functions.unshift(fn);
-
-        reversed && (functions = functions.reverse());
-
-        return fromFunction(function pipedFn(result) {
-            return functions.reduce(callNextWithResult, result);
-        }, fn.arity || fn.length);
-    }
-
-    function callNextWithResult(result, next) {
-        return next(result);
-    }
-
-    return Obj.extract(Fn, ['compose', 'pipeline', 'wrap']);
 });
