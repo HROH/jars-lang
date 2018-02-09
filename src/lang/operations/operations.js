@@ -1,27 +1,13 @@
-JARS.module('lang.operations', [
-    'Arithmetic',
-    'Comparison',
-    'Bitwise',
-    'Logical'
-]).$import([
-    '.assert',
-    '.Enum'
-]).$export(function(assert, Enum) {
+JARS.module('lang.operations', ['Arithmetic', 'Comparison', 'Bitwise', 'Logical']).$import(['System.Formatter::format', '.assert']).$export(function(format, assert) {
     'use strict';
 
-    var operationPlaceholder = '${op}',
-        rOperationPlaceholder = /\$\{op\}/g,
-        operands, firstOperand, secondOperand, operationBody, operations;
+    var operands = {
+            FIRST: 'a',
 
-    operands = new Enum({
-        FIRST: 'a',
-
-        SECOND: 'b'
-    });
-
-    firstOperand = operands.FIRST;
-    secondOperand = operands.SECOND;
-    operationBody = ['return arguments.length==2?', operationPlaceholder, ':(', secondOperand, '=', firstOperand, ',function(', firstOperand, '){return ', operationPlaceholder, '})'].join('');
+            SECOND: 'b'
+        },
+        operationBody = 'return arguments.length==2?${op}:(${SECOND}=${FIRST},function(${FIRST}){return ${op};})',
+        operations;
 
     operations = {
         operands: operands,
@@ -30,7 +16,13 @@ JARS.module('lang.operations', [
             /*jslint evil: true */
             assert(operator.length <= 6, 'Operator is too long!');
 
-            return new Function(firstOperand, secondOperand, operationBody.replace(rOperationPlaceholder, [negate ? '!' : '', '(', firstOperand, operator, secondOperand, ')'].join('')));
+            return new Function(operands.FIRST, operands.SECOND, format(operationBody, {
+                op: [negate ? '!' : '', '(', operands.FIRST, operator, operands.SECOND, ')'].join(''),
+
+                FIRST: operands.FIRST,
+
+                SECOND: operands.SECOND
+            }));
         }
     };
 

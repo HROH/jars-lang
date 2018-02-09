@@ -1,8 +1,8 @@
-JARS.module('lang.operations.Bitwise').$import(['.::createOperation', '..Object!Iterate', '..Enum']).$export(function(createOperation, Obj, Enum) {
+JARS.module('lang.operations.Bitwise').$import(['.::createOperation', '..Object!Iterate']).$export(function(createOperation, each) {
     'use strict';
 
     var Bitwise = {
-        operators: new Enum({
+        operators: {
             and: '&',
 
             or: '|',
@@ -14,14 +14,12 @@ JARS.module('lang.operations.Bitwise').$import(['.::createOperation', '..Object!
             rightShiftDrop: '>>',
 
             rightShiftFill: '>>>'
-        })
+        }
     };
 
-    Obj.each(Bitwise.operators.values(), defineBitwiseOperation);
-
-    function defineBitwiseOperation(bitwiseOperator, methodName) {
+    each(Bitwise.operators, function(bitwiseOperator, methodName) {
         Bitwise[bitwiseOperator] = Bitwise[methodName] = createOperation(bitwiseOperator);
-    }
+    });
 
     return Bitwise;
 });

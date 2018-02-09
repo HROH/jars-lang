@@ -1,8 +1,8 @@
-JARS.module('lang.operations.Arithmetic').$import(['.::createOperation', '..Object!Iterate', '..Enum']).$export(function(createOperation, Obj, Enum) {
+JARS.module('lang.operations.Arithmetic').$import(['.::createOperation', '..Object.Iterate::each']).$export(function(createOperation, each) {
     'use strict';
 
     var Arithmetic = {
-        operators: new Enum({
+        operators: {
             add: '+',
 
             subtract: '-',
@@ -12,14 +12,12 @@ JARS.module('lang.operations.Arithmetic').$import(['.::createOperation', '..Obje
             divideBy: '/',
 
             modulo: '%'
-        })
+        }
     };
 
-    Obj.each(Arithmetic.operators.values(), defineArithmeticOperation);
-
-    function defineArithmeticOperation(arithmeticOperator, arithmeticOperationName) {
+    each(Arithmetic.operators, function(arithmeticOperator, arithmeticOperationName) {
         Arithmetic[arithmeticOperationName] = Arithmetic[arithmeticOperator] = createOperation(arithmeticOperator);
-    }
+    });
 
     return Arithmetic;
 });

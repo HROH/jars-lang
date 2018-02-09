@@ -1,22 +1,20 @@
-JARS.module('lang.operations.Logical').$import(['.::createOperation', '.::operands', '..Object!Iterate', '..Enum']).$export(function(createOperation, operands, Obj, Enum) {
+JARS.module('lang.operations.Logical').$import(['.::createOperation', '.::operands', '..Object.Iterate::each']).$export(function(createOperation, operands, each) {
     'use strict';
 
     var Logical = {
-        operators: new Enum({
+        operators: {
             and: '&&',
 
-            or: '||',
-
-            xor: '?!' + operands.SECOND + ':!!'
-        })
+            or: '||'
+        }
     };
 
-    Obj.each(Logical.operators.values(), defineLogicalOperation);
-
-    function defineLogicalOperation(logicalOperator, methodName) {
+    each(Logical.operators, function(logicalOperator, methodName) {
         Logical[methodName] = Logical[logicalOperator] = createOperation(logicalOperator);
         Logical['n' + methodName] = Logical['!' + logicalOperator] = createOperation(logicalOperator, true);
-    }
+    });
+
+    Logical.xor = createOperation('?!' + operands.SECOND + ':!!');
 
     return Logical;
 });

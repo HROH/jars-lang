@@ -1,14 +1,13 @@
-JARS.module('lang.operations.Comparison').$import(['.::createOperation', '..Object!Iterate', '..Enum']).$export(function(createOperation, Obj, Enum) {
+JARS.module('lang.operations.Comparison').$import(['.::createOperation', '..Object.Iterate::each']).$export(function(createOperation, each) {
     'use strict';
 
     /**
-     * @access public
-     *
      * @namespace Comparison
-     * @memberof jar.lang.operations
+     *
+     * @memberof lang.operations
      */
     var Comparison = {
-        operators: new Enum({
+        operators: {
             Equal: {
                 op: '==',
 
@@ -44,26 +43,23 @@ JARS.module('lang.operations.Comparison').$import(['.::createOperation', '..Obje
 
                 alias: 'gte'
             }
-        })
+        }
     };
 
-    Obj.each(Comparison.operators.values(), defineComparisonOperation);
-
-    function defineComparisonOperation(comparator, comparisonName) {
+    each(Comparison.operators, function(comparator, comparisonName) {
         var operator = comparator.op,
             alias = comparator.alias,
             negatedOperator = '!' + (operator.indexOf('=') === 0 ? operator.substring(1) : operator);
 
         Comparison['is' + comparisonName] = Comparison[alias] = Comparison[operator] = createOperation(operator);
         Comparison['isNot' + comparisonName] = Comparison['n' + alias] = Comparison[negatedOperator] = createOperation(operator, true);
-    }
+    });
 
     /**
-     * @access public
-     *
-     * @function isEqual
+     * @method isEqual
      * @alias eq
-     * @memberof jar.lang.operations.Comparison
+     *
+     * @memberof lang.operations.Comparison
      *
      * @param {*} value
      * @param {*} compareValue
@@ -72,11 +68,10 @@ JARS.module('lang.operations.Comparison').$import(['.::createOperation', '..Obje
      */
 
     /**
-     * @access public
-     *
-     * @function isNotEqual
+     * @method isNotEqual
      * @alias neq
-     * @memberof jar.lang.operations.Comparison
+     *
+     * @memberof lang.operations.Comparison
      *
      * @param {*} value
      * @param {*} compareValue
@@ -85,11 +80,10 @@ JARS.module('lang.operations.Comparison').$import(['.::createOperation', '..Obje
      */
 
     /**
-     * @access public
-     *
-     * @function isStrictEqual
+     * @method isStrictEqual
      * @alias seq
-     * @memberof jar.lang.operations.Comparison
+     *
+     * @memberof lang.operations.Comparison
      *
      * @param {*} value
      * @param {*} compareValue
@@ -98,11 +92,10 @@ JARS.module('lang.operations.Comparison').$import(['.::createOperation', '..Obje
      */
 
     /**
-     * @access public
-     *
-     * @function isNotStrictEqual
+     * @method isNotStrictEqual
      * @alias nseq
-     * @memberof jar.lang.operations.Comparison
+     *
+     * @memberof lang.operations.Comparison
      *
      * @param {*} value
      * @param {*} compareValue
@@ -111,11 +104,10 @@ JARS.module('lang.operations.Comparison').$import(['.::createOperation', '..Obje
      */
 
     /**
-     * @access public
-     *
-     * @function isLowerThan
+     * @method isLowerThan
      * @alias lt
-     * @memberof jar.lang.operations.Comparison
+     *
+     * @memberof lang.operations.Comparison
      *
      * @param {*} value
      * @param {*} compareValue
@@ -124,11 +116,10 @@ JARS.module('lang.operations.Comparison').$import(['.::createOperation', '..Obje
      */
 
     /**
-     * @access public
-     *
-     * @function isNotLowerThan
+     * @method isNotLowerThan
      * @alias nlt
-     * @memberof jar.lang.operations.Comparison
+     *
+     * @memberof lang.operations.Comparison
      *
      * @param {*} value
      * @param {*} compareValue
@@ -137,11 +128,10 @@ JARS.module('lang.operations.Comparison').$import(['.::createOperation', '..Obje
      */
 
     /**
-     * @access public
-     *
-     * @function isLowerThanOrEqual
+     * @method isLowerThanOrEqual
      * @alias lte
-     * @memberof jar.lang.operations.Comparison
+     *
+     * @memberof lang.operations.Comparison
      *
      * @param {*} value
      * @param {*} compareValue
@@ -150,11 +140,10 @@ JARS.module('lang.operations.Comparison').$import(['.::createOperation', '..Obje
      */
 
     /**
-     * @access public
-     *
-     * @function isNotLowerThanOrEqual
+     * @method isNotLowerThanOrEqual
      * @alias nlte
-     * @memberof jar.lang.operations.Comparison
+     *
+     * @memberof lang.operations.Comparison
      *
      * @param {*} value
      * @param {*} compareValue
@@ -163,11 +152,10 @@ JARS.module('lang.operations.Comparison').$import(['.::createOperation', '..Obje
      */
 
     /**
-     * @access public
-     *
-     * @function isGreaterThan
+     * @method isGreaterThan
      * @alias gt
-     * @memberof jar.lang.operations.Comparison
+     *
+     * @memberof lang.operations.Comparison
      *
      * @param {*} value
      * @param {*} compareValue
@@ -176,11 +164,10 @@ JARS.module('lang.operations.Comparison').$import(['.::createOperation', '..Obje
      */
 
     /**
-     * @access public
-     *
-     * @function isNotGreaterThan
+     * @method isNotGreaterThan
      * @alias ngt
-     * @memberof jar.lang.operations.Comparison
+     *
+     * @memberof lang.operations.Comparison
      *
      * @param {*} value
      * @param {*} compareValue
@@ -189,11 +176,10 @@ JARS.module('lang.operations.Comparison').$import(['.::createOperation', '..Obje
      */
 
     /**
-     * @access public
-     *
-     * @function isGreaterThanOrEqual
+     * @method isGreaterThanOrEqual
      * @alias gte
-     * @memberof jar.lang.operations.Comparison
+     *
+     * @memberof lang.operations.Comparison
      *
      * @param {*} value
      * @param {*} compareValue
@@ -202,11 +188,10 @@ JARS.module('lang.operations.Comparison').$import(['.::createOperation', '..Obje
      */
 
     /**
-     * @access public
-     *
-     * @function isNotGreaterThanOrQual
+     * @method isNotGreaterThanOrQual
      * @alias ngte
-     * @memberof jar.lang.operations.Comparison
+     *
+     * @memberof lang.operations.Comparison
      *
      * @param {*} value
      * @param {*} compareValue
