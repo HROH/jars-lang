@@ -1,28 +1,15 @@
-JARS.module('lang.String').$import([{
+JARS.module('lang.String', ['Camelizer']).$import([{
     System: ['::isA', '::isString']
-}, '.Array!Manipulate,Reduce', '.!']).$export(function(isA, isString, Arr) {
+}, '.Type!String']).$export(function(isA, isString, Str) {
     'use strict';
 
-    var lang = this,
-        rCapitalLetter = /([A-Z])/g,
-        Str = lang.sandboxNativeType('String');
+    var rCapitalLetter = /([A-Z])/g;
 
     /**
-     * Extend jar.lang.String with some useful methods
+     * Extend lang.String with some useful methods
      * If a native implementation exists it will be used instead
      */
     Str.enhance({
-        camelize: function() {
-            var toCapitalize = this.split('-'),
-                camelized = '';
-
-            Arr.merge(toCapitalize, arguments);
-
-            camelized = Arr.reduce(toCapitalize, buildCamelized);
-
-            return fromString(camelized);
-        },
-
         capitalize: function() {
             return fromString(this.charAt(0).toUpperCase() + this.substr(1));
         },
@@ -54,16 +41,12 @@ JARS.module('lang.String').$import([{
         string = string || '';
 
         if (isString(string)) {
-            while (!(isA(string, Str))) {
+            while (!isA(string, Str)) {
                 string = new Str(string);
             }
         }
 
         return string;
-    }
-
-    function buildCamelized(startString, nextString) {
-        return startString + (nextString ? Str.capitalize(nextString) : '');
     }
 
     function dashifier(match) {

@@ -1,7 +1,7 @@
-JARS.module('lang.Date').$export(function() {
+JARS.module('lang.Date').$import('.Type!Date').$export(function(DateCopy) {
     'use strict';
 
-    var DateCopy = this.sandboxNativeType('Date').enhance({
+    DateCopy.enhance({
         toISOString: function() {
             return getISODateString(this) + 'T' + getISOTimeString(this) + 'Z';
         }

@@ -14,100 +14,37 @@ JARS.module('lang', [
     'Mixin',
     'Object.*',
     'operations.*',
-    'String'
-]).meta({
-	plugIn: function(pluginRequest) {
-        var requestor = pluginRequest.requestor,
-			EXTENSION_DELIMITER = ',',
-			EXTENSION_BUNDLE = 'All';
-
-        requestor.setMeta({
-			plugIn: function(typePluginRequest) {
-				var requestedExtensions = typePluginRequest.info.data.split(EXTENSION_DELIMITER),
-					extensions = [],
-					extLen = requestedExtensions.length,
-					idx = 0,
-					extension;
-
-				if (requestedExtensions[0] === EXTENSION_BUNDLE) {
-					extensions = [requestor.bundle.name];
-				}
-				else {
-					while (idx < extLen) {
-						extension = requestor.bundle.find(requestedExtensions[idx++]);
-
-						extension ? extensions.push(extension) : typePluginRequest.fail('Couldn\'t find submodule');
-					}
-				}
-
-				typePluginRequest.$importAndLink(extensions, function extensionsLoaded() {
-					return this;
-				});
-			}
-        });
-
-		pluginRequest.success();
-    }
-}).$import({
-    System: ['::env', '::isString', '::$$internals', '!']
-}).$export(function(env, isString, internals, config) {
+    'String.*',
+    'Type.*'
+]).$import({
+    System: ['::isString', '::$$internals']
+}).$export(function(isString, internals) {
     'use strict';
 
     var sandboxes = {},
         container = document.documentElement,
         __SANDBOX__ = '__SANDBOX__',
-        SYSTEM_SANDBOX = '__SYSTEM__',
-        hasOwn = {}.hasOwnProperty,
-        nativeTypes = {},
-        nativeTypeSandbox, lang;
-
-    function hasOwnProp(object, property) {
-        return hasOwn.call(object, property);
-    }
+        hasOwnProp = internals.get('Helpers/Object').hasOwnProp,
+        lang;
 
     /**
-     * @namespace lang
+     * @namespace
+     *
+     * @alias module:lang
      */
     lang = {
         /**
-         * @access public
+         * @param {string} formatString
          *
-         * @memberof lang
-         *
-         * @param {string} typeString
-         *
-         * @return {Object}
-         */
-        sandboxNativeType: function(typeString) {
-            var Type = getNativeType(typeString);
-
-            Type.enhance || (Type.enhance = function(prototypeMethods, staticMethods) {
-                return enhanceNativeType(Type, prototypeMethods, staticMethods);
-            });
-
-            return Type;
-        },
-        /**
-         * @access public
-         *
-         * @memberof lang
-         *
-         * @param {String} formatString
-         *
-         * @return {String}
+         * @return {string}
          */
         generateHash: function(formatString) {
             return formatString.replace(/x/g, randomHex);
         },
-
         /**
-         * @access public
+         * @param {string} domain
          *
-         * @memberOf lang
-         *
-         * @param {String} domain
-         *
-         * @return {lang~Sandbox}
+         * @return {module:lang~Sandbox}
          */
         sandbox: function(domain) {
             return sandboxes[domain] || (sandboxes[domain] = new Sandbox(domain));
@@ -115,40 +52,7 @@ JARS.module('lang', [
     };
 
     /**
-     * @access private
-     *
-     * @memberOf lang
-     * @inner
-     *
-     * @param {Function} methodName
-     *
-     * @return {function(*):*}
-     */
-    function createDelegate(method) {
-        /**
-         *
-         * @param {*} targetObject
-         *
-         * @return {*}
-         */
-        function delegater(targetObject) {
-            var slicedArgs = [],
-                argLen = arguments.length;
-
-            while (--argLen) {
-                slicedArgs[argLen - 1] = arguments[argLen];
-            }
-
-            return method.apply(targetObject, slicedArgs);
-        }
-
-        return delegater;
-    }
-
-    /**
-     * @access private
-     *
-     * @memberOf lang
+     * @memberof module:lang
      * @inner
      *
      * @param {HTMLDocument} sandboxDoc
@@ -176,12 +80,10 @@ JARS.module('lang', [
      *
      * @todo check browser support (should work in all legacy browsers)
      *
-     * @access private
+     * @class
      *
-     * @memberof lang
+     * @memberof module:lang
      * @inner
-     *
-     * @class Sandbox
      *
      * @param {string} domain
      */
@@ -209,11 +111,6 @@ JARS.module('lang', [
     }
 
     /**
-     * @access public
-     *
-     * @method add
-     * @memberof lang~Sandbox#
-     *
      * @param {string} value
      *
      * @return {*}
@@ -237,11 +134,6 @@ JARS.module('lang', [
     };
 
     /**
-     * @access public
-     *
-     * @method remove
-     * @memberof lang~Sandbox#
-     *
      * @param {string} value
      */
     Sandbox.prototype.remove = function(value) {
@@ -258,66 +150,11 @@ JARS.module('lang', [
         }
     };
 
-    nativeTypeSandbox = lang.sandbox(SYSTEM_SANDBOX);
-
     /**
-     * @access private
-     *
-     * @memberof lang
+     * @memberof module:lang
      * @inner
      *
-     * @param {String} typeString
-     *
-     * @return {Object}
-     */
-    function getNativeType(typeString) {
-        var Type = nativeTypes[typeString] || (config.allowProtoOverride ? env.global[typeString] : nativeTypeSandbox.add(typeString));
-
-        nativeTypes[typeString] || (nativeTypes[typeString] = Type);
-
-        return Type;
-    }
-
-    function enhanceNativeType(Type, prototypeMethods, staticMethods) {
-        addPrototypeMethods(Type, prototypeMethods);
-
-        addStaticMethods(Type, staticMethods);
-
-        return Type;
-    }
-
-    function addPrototypeMethods(Type, prototypeMethods) {
-        var typePrototype = Type.prototype,
-            methodName;
-
-        for (methodName in prototypeMethods) {
-            if (hasOwnProp(prototypeMethods, methodName)) {
-                if (!hasOwnProp(typePrototype, methodName)) {
-                    typePrototype[methodName] = prototypeMethods[methodName];
-                }
-
-                hasOwnProp(Type, methodName) || (Type[methodName] = createDelegate(typePrototype[methodName]));
-            }
-        }
-    }
-
-    function addStaticMethods(Type, staticMethods) {
-        var methodName;
-
-        for (methodName in staticMethods) {
-            if (hasOwnProp(staticMethods, methodName) && !hasOwnProp(Type, methodName)) {
-                Type[methodName] = staticMethods[methodName];
-            }
-        }
-    }
-
-    /**
-     * @access private
-     *
-     * @memberOf lang
-     * @inner
-     *
-     * @return {String}
+     * @return {string}
      */
     function randomHex() {
         return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);

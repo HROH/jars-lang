@@ -1,18 +1,20 @@
 JARS.module('lang.Array', ['Check', 'Derive', 'Find', 'Index', 'Iterate', 'Manipulate', 'Reduce']).$import([{
     '.assert': ['::isNotNil', 'Type::isFunction']
-}, '.!']).$export(function(assertIsNotNil, assertIsFunction) {
+}, '.Type!Array']).$export(function(assertIsNotNil, assertIsFunction, Arr) {
     'use strict';
 
-    /**
-     * Extend lang.Array with some useful methods
-     * If a native implementation exists it will be used instead
-     */
     var MSG_REQUIRES_ARRAYLIKE = 'Array.from requires an array-like object - not null or undefined',
-        MSG_NO_FUNCTION = 'Array.from: when provided, the second argument must be a function',
-        Arr = this.sandboxNativeType('Array');
+        MSG_NO_FUNCTION = 'Array.from: when provided, the second argument must be a function';
+
+    /**
+     * @class Array
+     *
+     * @memberof module:lang
+     *
+     * @alias module:Array
+     */
 
     Arr.enhance({
-        // add some sugar (example: lang.Array.push(arrayLike, value1, value2, ...) )
         concat: true,
 
         join: true,

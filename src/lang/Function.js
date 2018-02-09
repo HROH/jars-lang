@@ -1,12 +1,9 @@
 JARS.module('lang.Function', ['Advice', 'Combined', 'Flow', 'Guards', 'Modargs']).$import([{
-    System: ['::isA', '::isFunction'],
-    '.Array': ['.', '::from']
-}, '.!']).$export(function(isA, isFunction, Arr, fromArgs) {
+    System: ['::isA', '::isFunction']
+}, '.Array::fromArguments', '.Type!Function']).$export(function(isA, isFunction, fromArgs, Fn) {
     'use strict';
 
-    var lang = this,
-        fnConverter = lang.sandbox('__SYSTEM__').add('function(f, a){function fn(){return f.apply(this,arguments)};fn.arity=a||f.arity||f.length;return fn;}'),
-        Fn = lang.sandboxNativeType('Function'),
+    var fnConverter = this.sandbox('__SYSTEM__').add('function(f, a){function fn(){return f.apply(this,arguments)};fn.arity=a||f.arity||f.length;return fn;}'),
         applyFunction;
 
     Fn.enhance({
