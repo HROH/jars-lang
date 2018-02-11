@@ -1,6 +1,6 @@
-JARS.module('lang.Function.Combined').$import(['.::enhance', '.::from', '.::apply', {
+JARS.module('lang.Function.Combined').$import(['.::enhance', '.::from', '.::apply', '.::getArity', {
     '..Array': ['::fromArguments', 'Reduce::reduce']
-}, 'System::isFunction']).$export(function(enhance, fromFunction, applyFunction, fromArgs, reduce, isFunction) {
+}, 'System::isFunction']).$export(function(enhance, fromFunction, applyFunction, getArity, fromArgs, reduce, isFunction) {
     'use strict';
 
     /**
@@ -18,7 +18,7 @@ JARS.module('lang.Function.Combined').$import(['.::enhance', '.::from', '.::appl
 
         return functions.length === 1 ? fn : fromFunction(function combinedFn(result) {
             return reduce(functions, callNextWithResult, result);
-        }, fn.arity || fn.length);
+        }, getArity(fn));
     }
 
     function callNextWithResult(result, next) {
@@ -50,7 +50,7 @@ JARS.module('lang.Function.Combined').$import(['.::enhance', '.::from', '.::appl
                 context = this;
 
                 return applyFunction(wrapperFn, context, [next, arguments]);
-            }, wrapperFn.arity || wrapperFn.length);
+            }, getArity(wrapperFn));
         }
     });
 });

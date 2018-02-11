@@ -3,7 +3,7 @@ JARS.module('lang.Function', ['Advice', 'Combined', 'Flow', 'Guards', 'Modargs']
 }, '.Array::fromArguments', '.Type!Function']).$export(function(isA, isFunction, fromArgs, Fn) {
     'use strict';
 
-    var fnConverter = this.sandbox('__SYSTEM__').add('function(f, a){function fn(){return f.apply(this,arguments)};fn.arity=a||f.arity||f.length;return fn;}'),
+    var fnConverter = this.sandbox('__SYSTEM__').add('function(f){return function fn(){return f.apply(this,arguments)};}'),
         applyFunction;
 
     Fn.enhance({
@@ -13,7 +13,7 @@ JARS.module('lang.Function', ['Advice', 'Combined', 'Flow', 'Guards', 'Modargs']
                 boundArgs = fromArgs(arguments).slice(1),
                 returnFn = fromFunction(function boundFn() {
                     return applyFunction(fnToBind, (isA(this, FnLink) && context) ? this : context, boundArgs.concat(fromArgs(arguments)));
-                }, fnToBind.arity || fnToBind.length);
+                }, Fn.getArity(fnToBind));
 
             FnLink.prototype = fnToBind.prototype;
             returnFn.prototype = new FnLink();
@@ -21,12 +21,22 @@ JARS.module('lang.Function', ['Advice', 'Combined', 'Flow', 'Guards', 'Modargs']
             return returnFn;
         },
 
+        getArity: function() {
+            return this.arity || this.length || 0;
+        },
+
+        setArity: function(arity) {
+            this.arity = arity;
+
+            return this;
+        },
+
         negate: function() {
             var fn = this;
 
             return fromFunction(function() {
                 return !applyFunction(fn, this, arguments);
-            }, fn.arity || fn.length);
+            }, Fn.getArity(fn));
         },
         /**
          * Repeat the given function n times
@@ -46,7 +56,7 @@ JARS.module('lang.Function', ['Advice', 'Combined', 'Flow', 'Guards', 'Modargs']
          */
         repeat: function(times) {
             var args = fromArgs(arguments).slice(1),
-                results = Arr(),
+                results = [],
                 idx = 0;
 
             for (; idx < times;) {
@@ -93,7 +103,7 @@ JARS.module('lang.Function', ['Advice', 'Combined', 'Flow', 'Guards', 'Modargs']
      * @return {Function}
      */
     function fromFunction(fn, arity) {
-        return (isA(fn, Fn) || !isFunction(fn)) ? fn : fnConverter(fn, arity);
+        return (isA(fn, Fn) || !isFunction(fn)) ? fn : Fn.setArity(fnConverter(fn), arguments.length > 1 ? arity : Fn.getArity(fn));
     }
 
     return Fn;

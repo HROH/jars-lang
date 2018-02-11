@@ -4,7 +4,7 @@ JARS.module('lang.ObjectInterface').$import([{
         Check: ['::some', '::every'],
         Derive: ['::filter', '::map']
     }]
-}, '.Class']).$export(function(getCurrentModuleData, Logger, isFunction, isNumber, each, some, every, filter, map, Class) {
+}, '.Class', '.Function::getArity']).$export(function(getCurrentModuleData, Logger, isFunction, isNumber, each, some, every, filter, map, Class, getArity) {
     'use strict';
 
     var MSG_IMPLEMENTED_METHODS_MISSING = '${implementor} must implement the method(s): "${missingMethods}" !',
@@ -87,7 +87,7 @@ JARS.module('lang.ObjectInterface').$import([{
                     var methodToCheck = implementor[methodData[0]],
                         arity = methodData[1];
 
-                    return !isFunction(methodToCheck) || (isNumber(arity) && !(arity === methodToCheck.length || arity === methodToCheck.arity));
+                    return !isFunction(methodToCheck) || (isNumber(arity) && arity !== getArity(methodToCheck));
                 });
             },
 

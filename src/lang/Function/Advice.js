@@ -1,4 +1,4 @@
-JARS.module('lang.Function.Advice').$import(['.::apply', '.::from', '.::enhance']).$export(function(applyFunction, fromFunction, enhance) {
+JARS.module('lang.Function.Advice').$import(['.::apply', '.::from', '.::enhance', '.::getArity']).$export(function(applyFunction, fromFunction, enhance, getArity) {
     'use strict';
 
     var Advice = enhance({
@@ -22,7 +22,7 @@ JARS.module('lang.Function.Advice').$import(['.::apply', '.::from', '.::enhance'
                 executeAfterwards && applyFunction(executeAfterwards, context, arguments);
 
                 return result;
-            }, fn.arity || fn.length);
+            }, getArity(fn));
         }
     });
 

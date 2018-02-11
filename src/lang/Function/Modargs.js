@@ -1,7 +1,7 @@
-JARS.module('lang.Function.Modargs').$import(['.::enhance', '.::from', '.::apply', {
+JARS.module('lang.Function.Modargs').$import(['.::enhance', '.::from', '.::apply', '.::getArity', {
     '..Array': ['::from', '::reverse'],
     '..transducers': ['::intoArray', '::map']
-}]).$export(function(enhance, fromFunction, applyFunction, fromArgs, reverseArray, intoArray, map) {
+}]).$export(function(enhance, fromFunction, applyFunction, getArity, fromArgs, reverseArray, intoArray, map) {
     'use strict';
 
     var Modargs = enhance({
@@ -10,7 +10,7 @@ JARS.module('lang.Function.Modargs').$import(['.::enhance', '.::from', '.::apply
 
             return fromFunction(function flippedFn() {
                 return applyFunction(fn, this, reverseArray(arguments));
-            }, fn.arity || fn.length);
+            }, getArity(fn));
         },
 
         functional: function(arity) {
@@ -20,7 +20,7 @@ JARS.module('lang.Function.Modargs').$import(['.::enhance', '.::from', '.::apply
         curry: function(arity) {
             var fn = this;
 
-            arity = arity || fn.arity || fn.length;
+            arity = arity || getArity(fn);
 
             return fromFunction(arity < 2 ? fn : function curryFn() {
                 var args = fromArgs(arguments);
@@ -73,7 +73,7 @@ JARS.module('lang.Function.Modargs').$import(['.::enhance', '.::from', '.::apply
                 var replaceArgs = isPartial ? fromArgs(arguments) : args.slice();
 
                 return applyFunction(fn, this, intoArray(replacePlaceholders(replaceArgs), isPartial ? args : fromArgs(arguments)).concat(replaceArgs));
-            }, fn.arity || fn.length);
+            }, getArity(fn));
         };
     }
 

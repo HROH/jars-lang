@@ -1,4 +1,6 @@
-JARS.module('lang.Function.Flow').$import(['.::enhance', '.::from', '.::apply', 'System::env', '..Array::from']).$export(function(enhance, fromFunction, applyFunction, env, fromArgs) {
+JARS.module('lang.Function.Flow').$import([{
+    '.': ['::enhance', '::from', '::apply', '::getArity']
+}, 'System::env', '..Array::from']).$export(function(enhance, fromFunction, applyFunction, getArity, env, fromArgs) {
     'use strict';
 
     var global = env.global,
@@ -49,7 +51,7 @@ JARS.module('lang.Function.Flow').$import(['.::enhance', '.::from', '.::apply', 
             else {
                 applyFunction(fn, context, arguments);
             }
-        }, fn.arity || fn.length);
+        }, getArity(fn));
     }
 
     return enhance({

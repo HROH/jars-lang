@@ -2,9 +2,9 @@ JARS.module('lang.Type.Method.Instance').$import([{
     System: ['Logger', {
         Modules: ['::getCurrentModuleData', '::use']
     }],
-    'lang.Function': ['::apply', '::attempt'],
+    'lang.Function': ['::apply', '::attempt', '::getArity', '::setArity'],
     '..Class': ['::is', 'Access']
-}, '..Instance', 'lang.Object.Extend::extend']).$export(function(Logger, getCurrentModuleData, useModule, applyFunction, attempt, isClass, Access, TypeInstance, extend) {
+}, '..Instance', 'lang.Object.Extend::extend']).$export(function(Logger, getCurrentModuleData, useModule, applyFunction, attempt, getArity, setArity, isClass, Access, TypeInstance, extend) {
     'use strict';
 
     var instanceLogger = Logger.forCurrentModule(),
@@ -29,9 +29,9 @@ JARS.module('lang.Type.Method.Instance').$import([{
         },
 
         privileged: function(Class, method) {
-            return addArity(function() {
+            return setArity(function() {
                 return handlePrivileged(Class, this, method, arguments);
-            }, method);
+            }, getArity(method));
         },
 
         privilegedWithModule: function() {
@@ -45,12 +45,6 @@ JARS.module('lang.Type.Method.Instance').$import([{
             };
         }
     };
-
-    function addArity(toFn, fromFn) {
-        toFn.arity = fromFn.length || fromFn.arity || 0;
-
-        return toFn;
-    }
 
     function handlePrivileged(Class, instance, method, args, moduleName) {
         return canCallPrivileged(instance, Class, moduleName) ? callPrivileged(instance, method, args || []) : undefined;
