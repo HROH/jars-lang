@@ -14,7 +14,7 @@ JARS.module('lang.Mixin').$import(['System::isArray', '.ObjectMixin', '.Object.E
 
                 options = options || {};
 
-                this._$allowedClasses = filter(isArray(options.classes) ? options.classes : [options.classes], isClass);
+                this._$allowedClasses = filterClasses(options.classes);
                 this._$destructor = options.destructor;
             },
 
@@ -69,6 +69,10 @@ JARS.module('lang.Mixin').$import(['System::isArray', '.ObjectMixin', '.Object.E
 
     function isReceiverAllowed(receiver, allowedClass) {
         return receiver === allowedClass || allowedClass.isSuperclassOf(receiver) || allowedClass.isInstance(receiver);
+    }
+
+    function filterClasses(classes) {
+        return filter(isArray(classes) ? classes : [classes], isClass);
     }
 
     /**

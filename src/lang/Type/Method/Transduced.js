@@ -1,6 +1,6 @@
 JARS.module('lang.Type.Method.Transduced').$import(['.::withAssert', '.::withCallbackAssert', {
-    lang: ['transducers', 'Function!Combined']
-}]).$export(function(withAssert, withCallbackAssert, transducers, Fn) {
+    lang: ['transducers', 'Function.Combined::compose']
+}]).$export(function(withAssert, withCallbackAssert, transducers, compose) {
     'use strict';
 
     var Transduced = {
@@ -11,7 +11,7 @@ JARS.module('lang.Type.Method.Transduced').$import(['.::withAssert', '.::withCal
 
                         extraArg: extraArg
                     },
-                    transducer = Fn.compose(transduceOptions.pre(data), transducers[methodName](prepareCallback(callback, context, data)), transduceOptions.post(data));
+                    transducer = compose(transduceOptions.pre(data), transducers[methodName](prepareCallback(callback, context, data)), transduceOptions.post(data));
 
                 return transducers.into(transducer, transduceOptions.collector, this);
             }));

@@ -1,7 +1,7 @@
 JARS.module('lang.Enum').$import([{
     System: ['::isArray', '::isObject'],
-    '.Object': ['::hasOwn', 'Extend::copy', 'Iterate::each']
-}, '.Array.Reduce::reduce', '.Class']).$export(function(isArray, isObject, hasOwn, copy, each, reduce, Class) {
+    '.Object': ['::hasOwn', 'Extend::copy', 'Extend::extend']
+}, '.Array.Reduce::reduce', '.Class']).$export(function(isArray, isObject, hasOwn, copy, extend, reduce, Class) {
     'use strict';
 
     var BASE_TWO = 2,
@@ -13,7 +13,7 @@ JARS.module('lang.Enum').$import([{
                 options = options || {};
 
                 if (isArray(enums)) {
-                    enums = reduce(enums, function aggregateEnums(enumsObject, key, index) {
+                    enums = reduce(enums, function(enumsObject, key, index) {
                         enumsObject[key] = options.bitSteps ? Math.pow(BASE_TWO, index) : options.mirror ? key : index;
 
                         return enumsObject;
@@ -21,7 +21,7 @@ JARS.module('lang.Enum').$import([{
                 }
 
                 if (isObject(enums)) {
-                    each(enums, addKeyToEnum, this);
+                    extend(this, enums);
 
                     this._$enums = enums;
                 }
@@ -40,11 +40,6 @@ JARS.module('lang.Enum').$import([{
             enums: null
         }
     });
-
-    function addKeyToEnum(value, key) {
-        /*jslint validthis: true */
-        this[key] = value;
-    }
 
     return Enum;
 });

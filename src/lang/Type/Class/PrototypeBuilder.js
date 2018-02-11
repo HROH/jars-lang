@@ -6,6 +6,9 @@ JARS.module('lang.Type.Class.PrototypeBuilder').$import(['System::isFunction', {
 }]).$export(function(isFunction, privileged, privilegedWithClass, hasOwn, each, extend, map, filter) {
     'use strict';
 
+    var PRIVILEGED_IDENTIFIER = '$',
+        PRIVILEGED_IDENTIFIER_ALIAS = 'privileged';
+
     function PrototypeBuilder(prototype) {
         this._proto = prototype || {};
     }
@@ -19,13 +22,12 @@ JARS.module('lang.Type.Class.PrototypeBuilder').$import(['System::isFunction', {
                     $proxy: privilegedWithClass(Class)
                 };
 
-            if (hasOwn(proto, accessIdentifier) || hasOwn(proto, accessIdentifierAlias)) {
-                each(proto[accessIdentifier] || proto[accessIdentifierAlias], function addHiddenProperty(value, property) {
+            if (hasProto(proto, accessIdentifier, accessIdentifierAlias)) {
+                each(getProto(proto, accessIdentifier, accessIdentifierAlias), function addHiddenProperty(value, property) {
                     hiddenProto[accessIdentifier + property] = value;
                 });
 
-                delete proto[accessIdentifier];
-                delete proto[accessIdentifierAlias];
+                removeProto(accessIdentifier, accessIdentifierAlias);
             }
 
             return hiddenProto;
@@ -34,17 +36,30 @@ JARS.module('lang.Type.Class.PrototypeBuilder').$import(['System::isFunction', {
         getPublic: function(Class) {
             var proto = this._proto;
 
-            if(hasOwn(proto, '$')) {
-                extend(proto, map(filter(proto.$, isFunction), function(method) {
+            if(hasProto(PRIVILEGED_IDENTIFIER, PRIVILEGED_IDENTIFIER_ALIAS)) {
+                extend(proto, map(filter(getProto(proto, PRIVILEGED_IDENTIFIER, PRIVILEGED_IDENTIFIER_ALIAS), isFunction), function(method) {
                     return privileged(Class, method);
                 }));
 
-                delete proto.$;
+                removeProto(PRIVILEGED_IDENTIFIER, PRIVILEGED_IDENTIFIER_ALIAS);
             }
 
             return proto;
         }
     };
+
+    function getProto(proto, id, alias) {
+        return proto[id] || proto[alias];
+    }
+
+    function hasProto(proto, id, alias) {
+        return hasOwn(proto, id) || hasOwn(proto, alias);
+    }
+
+    function removeProto(proto, id, alias) {
+        delete proto[id];
+        delete proto[alias];
+    }
 
     return PrototypeBuilder;
 });

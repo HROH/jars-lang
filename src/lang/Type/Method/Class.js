@@ -1,8 +1,8 @@
 JARS.module('lang.Type.Method.Class').$import(['System::isFunction', {
     lang: [{
         Function: ['::apply', 'Advice::around']
-    }, 'Array.Search::contains', 'Object.Iterate::each']
-}]).$export(function(isFunction, applyFunction, around, contains, each) {
+    }, 'Array.Search::contains', 'Object.Manipulate::update']
+}]).$export(function(isFunction, applyFunction, around, contains, update) {
     'use strict';
 
     var excludeOverride = ['Class', 'constructor', 'getHash', '$proxy'],
@@ -10,17 +10,19 @@ JARS.module('lang.Type.Method.Class').$import(['System::isFunction', {
 
     ClassMethod = {
         overrideAll: function(proto, superProto) {
-            each(proto, function(method, methodName) {
-                // Never override Class()-, constructor()-, $proxy()- and getHash()-methods
-                if (isFunction(method) && !contains(excludeOverride, methodName) && isFunction(superProto[methodName]) && superProto[methodName] !== method) {
-                    proto[methodName] = override(method, function $super() {
-                        return applyFunction(superProto[methodName], this, arguments);
-                    });
-                }
+            return update(proto, function(method, methodName) {
+                return canOverride(method, methodName, superProto) ? override(method, function $super() {
+                    return applyFunction(superProto[methodName], this, arguments);
+                }) : method;
             });
         }
     };
-    
+
+    // Never override Class()-, constructor()-, $proxy()- and getHash()-methods
+    function canOverride(method, methodName, superProto) {
+        return isFunction(method) && !contains(excludeOverride, methodName) && isFunction(superProto[methodName]) && superProto[methodName] !== method;
+    }
+
     /**
      * @param {function} method
      * @param {function} superMethod

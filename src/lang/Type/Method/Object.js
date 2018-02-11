@@ -8,17 +8,7 @@ JARS.module('lang.Type.Method.Object').$import(['.::withAssert', {
 
     var ObjectMethod = {
         withCallback: function(methodName, transduceOptions) {
-            transduceOptions = transduceOptions || {};
-
-            return withCallback('Object', methodName, {
-                pre: function(data) {
-                    return compose(createKeyExtractor(data), (transduceOptions.pre || noop)(data));
-                },
-
-                post: postAddKey,
-
-                collector: transduceOptions.collector || ObjectCollector
-            });
+            return withCallback('Object', methodName, getTransduceOptions(transduceOptions || {}));
         },
 
         withTransducer: partial(withTransducer, 'Object'),
@@ -26,7 +16,19 @@ JARS.module('lang.Type.Method.Object').$import(['.::withAssert', {
         withAssert: partial(withAssert, 'Object')
     };
 
-    function createKeyExtractor(data) {
+    function getTransduceOptions(transduceOptions) {
+        return {
+            pre: function(data) {
+                return compose(preExtractKey(data), (transduceOptions.pre || noop)(data));
+            },
+
+            post: postAddKey,
+
+            collector: transduceOptions.collector || ObjectCollector
+        };
+    }
+
+    function preExtractKey(data) {
         return map(function(input) {
             data.extraInput = input[0];
 

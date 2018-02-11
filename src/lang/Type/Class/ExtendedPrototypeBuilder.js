@@ -1,6 +1,6 @@
-JARS.module('lang.Type.Class.ExtendedPrototypeBuilder').$import(['.PrototypeBuilder', '..Method.Class::overrideAll', {
+JARS.module('lang.Type.Class.ExtendedPrototypeBuilder').$import(['.PrototypeBuilder', '..Method.Class::overrideAll', 'lang.Function.Advice::around', {
     'lang.Object.Extend': ['::extend', '::merge']
-}]).$export(function(PrototypeBuilder, overrideAll, extend, merge) {
+}]).$export(function(PrototypeBuilder, overrideAll, around, extend, merge) {
     'use strict';
 
     var currentlyExtending;
@@ -17,24 +17,16 @@ JARS.module('lang.Type.Class.ExtendedPrototypeBuilder').$import(['.PrototypeBuil
         constructor: ExtendedPrototypeBuilder,
 
         getHidden: function(Class, accessIdentifier, accessIdentifierAlias, hiddenProto, hiddenSuperproto) {
-            extend(hiddenProto, this._builder.getHidden(Class, accessIdentifier, accessIdentifierAlias), hiddenSuperproto);
-
-            overrideAll(hiddenProto, hiddenSuperproto);
-
-            return hiddenProto;
+            return overrideAll(extend(hiddenProto, this._builder.getHidden(Class, accessIdentifier, accessIdentifierAlias), hiddenSuperproto), hiddenSuperproto);
         },
 
-        getPublic: function(Class, Superclass) {
-            var proto;
-
+        getPublic: around(function(Class, Superclass) {
+            return overrideAll(merge(new Superclass(), Class.prototype, this._builder.getPublic(Class)), Superclass.prototype);
+        }, function(Class, Superclass) {
             currentlyExtending = Superclass;
-            proto = merge(new Superclass(), Class.prototype, this._builder.getPublic(Class));
+        }, function() {
             currentlyExtending = null;
-
-            overrideAll(proto, Superclass.prototype);
-
-            return proto;
-        }
+        })
     };
 
     return ExtendedPrototypeBuilder;

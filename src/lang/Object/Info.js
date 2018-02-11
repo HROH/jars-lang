@@ -1,21 +1,18 @@
 JARS.module('lang.Object.Info').$import(['.::enhance', '.::hasOwn', '.Reduce::reduce', {
-    'lang.Array': ['::from', 'Reduce::reduce'],
+    'lang.Array': ['::from', 'Reduce::reduce', {
+        Item: ['::head', '::tail']
+    }],
     'lang.Function.Modargs': ['::PLACEHOLDER', '::partial'],
     'lang.Type.Method.Object': ['::withAssert', '::withTransducer'],
-    lang: ['transcollectors.Array', 'transducers::map']
-}]).$export(function(enhance, hasOwn, objectReduce, fromArray, arrayReduce, PLACEHOLDER, partial, withAssert, withTransducer, ArrayCollector, map) {
+    lang: ['transcollectors.Array', 'transducers::map', 'operations.Arithmetic::add']
+}]).$export(function(enhance, hasOwn, objectReduce, fromArray, arrayReduce, head, tail, PLACEHOLDER, partial, withAssert, withTransducer, ArrayCollector, map, add) {
     'use strict';
 
-    var withTransducerToArray = partial(withTransducer, PLACEHOLDER, ArrayCollector);
-
-    function countProperties(size) {
-        return ++size;
-    }
+    var withTransducerToArray = partial(withTransducer, PLACEHOLDER, ArrayCollector),
+        countProperties = add(1);
 
     return enhance({
-        keys: withTransducerToArray('keys', map(function(pair) {
-            return pair[0];
-        })),
+        keys: withTransducerToArray('keys', map(head)),
 
         pairs: withTransducerToArray('pairs', map(fromArray)),
 
@@ -29,8 +26,6 @@ JARS.module('lang.Object.Info').$import(['.::enhance', '.::hasOwn', '.Reduce::re
             return objectReduce(this, countProperties, 0);
         }),
 
-        values: withTransducerToArray('values', map(function(pair) {
-            return pair[1];
-        }))
+        values: withTransducerToArray('values', map(tail))
     });
 });

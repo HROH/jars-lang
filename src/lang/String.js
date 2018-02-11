@@ -3,7 +3,7 @@ JARS.module('lang.String', ['Camelizer']).$import([{
 }, '.Type!String']).$export(function(isA, isString, Str) {
     'use strict';
 
-    var rCapitalLetter = /([A-Z])/g;
+    var RE_CAPITAL_LETTER = /([A-Z])/g;
 
     /**
      * Extend lang.String with some useful methods
@@ -15,17 +15,15 @@ JARS.module('lang.String', ['Camelizer']).$import([{
         },
 
         dashify: function() {
-            return fromString(this.replace(rCapitalLetter, dashifier));
+            return fromString(this.replace(RE_CAPITAL_LETTER, dashifier));
         },
 
         startsWith: function(start) {
-            var rstart = new RegExp('^' + start);
-            return rstart.test(this);
+            return new RegExp('^' + start).test(this);
         },
 
         endsWith: function(end) {
-            var rend = new RegExp(end + '$');
-            return rend.test(this);
+            return new RegExp(end + '$').test(this);
         }
     }, {
         from: fromString,

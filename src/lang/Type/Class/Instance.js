@@ -2,8 +2,9 @@ JARS.module('lang.Type.Class.Instance').$import(['.::enhance', '.::onAdded', '.:
     '..Instance': ['::add', '::onAdded', '::onRemoved'],
     'lang.Object': ['Info::values'],
     'lang.Array': ['Reduce::reduce', 'Find::find'],
+    'lang.Function': ['Advice::around'],
     'System': ['::isA', '::isFunction']
-}]).$export(function(enhance, onClassAdded, onClassRemoved, isExtending, addInstance, onInstanceAdded, onInstanceRemoved, values, arrayReduce, find, isA, isFunction) {
+}]).$export(function(enhance, onClassAdded, onClassRemoved, isExtending, addInstance, onInstanceAdded, onInstanceRemoved, values, arrayReduce, find, around, isA, isFunction) {
     'use strict';
 
     var Classes = {},
@@ -86,15 +87,11 @@ JARS.module('lang.Type.Class.Instance').$import(['.::enhance', '.::onAdded', '.:
             return returnValue;
         },
 
-        NewBare: function(instance) {
+        NewBare: around(function(instance) {
             var Class = this;
 
-            Classes[Class.getHash()].skipConstructor = true;
-            instance = Class.isInstance(instance) ? Class.New(instance) : new Class();
-            Classes[Class.getHash()].skipConstructor = false;
-
-            return instance;
-        },
+            return Class.isInstance(instance) ? Class.New(instance) : new Class();
+        }, createConstructorToggle(true), createConstructorToggle(false)),
 
         isInstance: function(instance) {
             return isA(instance, this);
@@ -103,17 +100,21 @@ JARS.module('lang.Type.Class.Instance').$import(['.::enhance', '.::onAdded', '.:
          * @return {Array.<Object>}
          */
         getInstances: function(includeSubclasses) {
-            var instances = values(Classes[this.getHash()].instances);
-
-            return includeSubclasses ? arrayReduce(this.getSubclasses(), function(instances, Subclass) {
+            return arrayReduce(includeSubclasses ? this.getSubclasses() : [], function(instances, Subclass) {
                 return instances.concat(Subclass.getInstances(true));
-            }, instances) : instances;
+            }, values(Classes[this.getHash()].instances));
         },
 
         getInstance: function(instanceHash) {
             return Classes[this.getHash()].instances[instanceHash] || null;
         }
     });
+
+    function createConstructorToggle(skipConstructor) {
+        return function() {
+            Classes[this.getHash()].skipConstructor = skipConstructor;
+        };
+    }
 
     /**
      * @param {function(Class):Boolean} predicate

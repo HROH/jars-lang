@@ -73,7 +73,7 @@ JARS.module('lang.Type.Class', ['Access', 'Destructors', 'ExtendedPrototypeBuild
                 };
 
                 objectEach(accessIdentifiers, function(alias, id) {
-                    Classes[classHash][id + 'proto'] = prototypeBuilder.getHidden(Class, id, alias);
+                    setPrototype(Class, id, prototypeBuilder.getHidden(Class, id, alias));
                 });
 
                 extend(Class.prototype, prototypeBuilder.getPublic(Class));
@@ -92,11 +92,8 @@ JARS.module('lang.Type.Class', ['Access', 'Destructors', 'ExtendedPrototypeBuild
         },
 
         addWithSuperclass: function(Class, Superclass, prototypeBuilder, staticProperties) {
-            var classHidden = Classes[Class.getHash()],
-                superclassHidden = Classes[Superclass.getHash()];
-
             objectEach(accessIdentifiers, function(alias, id) {
-                classHidden[id + 'proto'] = prototypeBuilder.getHidden(Class, id, alias, classHidden[id + 'proto'], superclassHidden[id + 'proto']);
+                setPrototype(Class, id, prototypeBuilder.getHidden(Class, id, alias, getPrototype(Class, id), getPrototype(Superclass, id)));
             });
 
             Class.prototype = prototypeBuilder.getPublic(Class, Superclass);
@@ -126,10 +123,8 @@ JARS.module('lang.Type.Class', ['Access', 'Destructors', 'ExtendedPrototypeBuild
         },
 
         getPrototypesOf: function(Class) {
-            var classHidden = Classes[Class.getHash()];
-
             return map(accessIdentifiers, function(alias, id) {
-                return copy(classHidden[id + 'proto']);
+                return copy(getPrototype(Class, id));
             });
         },
         /**
@@ -161,6 +156,14 @@ JARS.module('lang.Type.Class', ['Access', 'Destructors', 'ExtendedPrototypeBuild
             return isA(Class, MetaClass);
         }
     };
+
+    function getPrototype(Class, id) {
+        return Classes[Class.getHash()][id + 'proto'];
+    }
+
+    function setPrototype(Class, id, proto) {
+        Classes[Class.getHash()][id + 'proto'] = proto;
+    }
 
     function createClassHash(name, moduleName) {
         return 'Class #<' + moduleName + ':' + name + '>';

@@ -5,6 +5,7 @@ JARS.module('lang.Type.Class.Destructors').$import(['System::isFunction', '.::en
     'use strict';
 
     var Classes = {},
+        MSG_ALREADY_DESTRUCTED = '"${instance}" is already destructed',
         Destructors;
 
     Destructors = {
@@ -32,7 +33,7 @@ JARS.module('lang.Type.Class.Destructors').$import(['System::isFunction', '.::en
             var Class = this;
 
             if (isFunction(destructor)) {
-                (Class.isInstance(instance) ? Classes[Class.getHash()].instanceDestructors[instance.getHash()] : Classes[Class.getHash()].destructors).push(privileged(Class, destructor));
+                (Class.isInstance(instance) ? getInstanceDestructors(Class, instance) : getClassDestructors(Class)).push(privileged(Class, destructor));
             }
 
             return Class;
@@ -44,15 +45,11 @@ JARS.module('lang.Type.Class.Destructors').$import(['System::isFunction', '.::en
          */
         destructInstance: function(instance) {
             var Class = this,
-                instanceHash = instance.getHash(),
-                instanceDestructors = Classes[Class.getHash()].instanceDestructors,
-                destructors;
+                destructors = getInstanceDestructors(Class, instance);
 
-            if (Class.isInstance(instance) && hasOwn(instanceDestructors, instanceHash)) {
-                destructors = instanceDestructors[instanceHash];
-
+            if (Class.isInstance(instance) && destructors) {
                 do {
-                    mergeUnique(destructors, Classes[Class.getHash()].destructors);
+                    mergeUnique(destructors, getClassDestructors(Class));
                     Class = Class.getSuperclass();
                 } while (Class);
 
@@ -66,7 +63,9 @@ JARS.module('lang.Type.Class.Destructors').$import(['System::isFunction', '.::en
                 instance.Class.destructInstance(instance);
             }
             else {
-                Class.logger.warn('"' + instanceHash + '" is already destructed');
+                Class.logger.warn(MSG_ALREADY_DESTRUCTED, {
+                    instance: instance.getHash()
+                });
             }
 
             return Class;
@@ -84,6 +83,14 @@ JARS.module('lang.Type.Class.Destructors').$import(['System::isFunction', '.::en
             removeClass(Class);
         }
     });
+
+    function getClassDestructors(Class) {
+        return Classes[Class.getHash()].destructors;
+    }
+
+    function getInstanceDestructors(Class, instance) {
+        return Classes[Class.getHash()].instanceDestructors[instance.getHash()];
+    }
 
     onClassAdded(function(Class) {
         Classes[Class.getHash()] = {

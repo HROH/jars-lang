@@ -1,7 +1,9 @@
 JARS.module('lang.Object', ['Derive', 'Extend', 'Info', 'Iterate', 'Manipulate', 'Reduce']).$import([{
-    System: ['::isA', '::isObject']
-}, '.Type!Object']).$export(function(isA, isObject, Obj) {
+    System: ['::$$internals', '::isA', '::isObject']
+}, '.Type!Object']).$export(function(internals, isA, isObject, Obj) {
     'use strict';
+
+    var merge = internals.get('Helpers/Object').merge;
 
     /**
      * Extend lang.Object with some useful methods
@@ -14,9 +16,8 @@ JARS.module('lang.Object', ['Derive', 'Extend', 'Info', 'Iterate', 'Manipulate',
         fromNative: fromObject
     });
 
-    // TODO Obj.copy not available
-    function fromObject(object, deep) {
-        return (isA(object, Obj) || !isObject(object)) ? object : Obj.copy(object, deep);
+    function fromObject(object) {
+        return (isA(object, Obj) || !isObject(object)) ? object : merge(Obj(), object);
     }
 
     return Obj;

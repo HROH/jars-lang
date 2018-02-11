@@ -9,9 +9,11 @@ JARS.module('lang.Object.Manipulate').$import(['.::enhance', '.Iterate::each', '
 
     return enhance({
         update: function(callback, context) {
-            each(this, function updateProperty(value, property, object) {
+            each(this, function(value, property, object) {
                 object[property] = callback.call(context, value, property, object);
             });
+
+            return this;
         },
 
         remove: function(keys) {
