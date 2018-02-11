@@ -1,4 +1,4 @@
-JARS.module('lang.Type.Class', ['Access', 'Destructors', 'ExtendedPrototypeBuilder', 'Inheritance', 'Instance', 'Module', 'PrototypeBuilder']).$import({
+JARS.module('lang.Type.Class', ['Access', 'Destructors', 'ExtendedPrototypeBuilder', 'Inheritance', 'Instance', 'Module', 'Pool', 'PrototypeBuilder']).$import({
     System: ['::isA', 'Logger', 'Formatter::format', 'Modules::getCurrentModuleData'],
     lang: ['::sandbox', 'Array.Iterate::each'],
     'lang.Object': ['::hasOwn', 'Derive::map', 'Extend::copy', 'Reduce::reduce', 'Iterate::each', {
