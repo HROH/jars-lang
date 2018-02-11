@@ -1,4 +1,4 @@
-JARS.module('lang.Class.Abstract').$export(function() {
+JARS.module('lang.Class.Abstract').$import('lang.Type.Class::onRemoved').$export(function(onClassRemoved) {
     'use strict';
 
     var ClassFactory = this,
@@ -39,21 +39,15 @@ JARS.module('lang.Class.Abstract').$export(function() {
 
     // If Class is an abstract Class return an empty Object
     // Returning undefined won't work because of the function behaviour in combination with 'new'
-    ClassFactory.isNewableWhen(classIsNotAbstract, returnEmptyObject, 'You can\'t create a new instance of an abstract Class.');
-
-    function classIsNotAbstract(Class) {
+    ClassFactory.isNewableWhen(function(Class) {
         return !Class.isAbstract();
-    }
-
-    function returnEmptyObject() {
+    }, function() {
         return {};
-    }
+    }, 'You can\'t create a new instance of an abstract Class.');
 
-    ClassFactory.isExtendableWhen(classIsNotAbstractOrSuperclassIsAbstract, 'The given Superclass: "${superclassHash}" is not abstract and can\'t be extended by an abstract Class!');
-
-    function classIsNotAbstractOrSuperclassIsAbstract(data) {
+    ClassFactory.isExtendableWhen(function(data) {
         return !data.Class.isAbstract() || data.Superclass.isAbstract();
-    }
+    }, 'The given Superclass: "${superclassHash}" is not abstract and can\'t be extended by an abstract Class!');
 
     function Abstract(name, proto, staticProperties) {
         return toAbstract(ClassFactory(name, proto, staticProperties));
@@ -64,6 +58,12 @@ JARS.module('lang.Class.Abstract').$export(function() {
             this.Class.logger.error('Override ${0}()!', [methodName]);
         };
     };
+
+    onClassRemoved(function(Class) {
+        if(Class.isAbstract()) {
+            delete classesIsAbstract[Class.getHash()];
+        }
+    });
 
     return Abstract;
 });

@@ -1,4 +1,4 @@
-JARS.module('lang.Class.Final').$export(function() {
+JARS.module('lang.Class.Final').$import('lang.Type.Class::onRemoved').$export(function(onClassRemoved) {
     'use strict';
 
     var ClassFactory = this,
@@ -37,11 +37,15 @@ JARS.module('lang.Class.Final').$export(function() {
         return Class;
     }
 
-    ClassFactory.isExtendableWhen(superclassIsNotFinal, 'The given Superclass: "${superclassHash}" is final and can\'t be extended!');
-
-    function superclassIsNotFinal(data) {
+    ClassFactory.isExtendableWhen(function(data) {
         return !data.Superclass.isFinal();
-    }
+    }, 'The given Superclass: "${superclassHash}" is final and can\'t be extended!');
+
+    onClassRemoved(function(Class) {
+        if(Class.isFinal()) {
+            delete classesIsFinal[Class.getHash()];
+        }
+    });
 
     function Final(name, proto, staticProperties) {
         return toFinal(ClassFactory(name, proto, staticProperties));

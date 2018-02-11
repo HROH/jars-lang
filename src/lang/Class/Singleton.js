@@ -1,4 +1,4 @@
-JARS.module('lang.Class.Singleton').$export(function() {
+JARS.module('lang.Class.Singleton').$import('lang.Type.Class::onRemoved').$export(function(onClassRemoved) {
     'use strict';
 
     var ClassFactory = this,
@@ -21,13 +21,7 @@ JARS.module('lang.Class.Singleton').$export(function() {
     });
 
     function toSingleton(Class, args) {
-        var singleton = classesSingleton[Class.getHash()] = Class.New(args);
-
-        Class.addDestructor(function() {
-            if (this === singleton) {
-                classesSingleton[Class.getHash()] = null;
-            }
-        });
+        classesSingleton[Class.getHash()] = Class.New(args);
 
         return Class;
     }
@@ -41,6 +35,12 @@ JARS.module('lang.Class.Singleton').$export(function() {
     }, function(Class) {
         return Class.singleton();
     }, 'You can\'t create a new instance of a Singleton.');
+
+    onClassRemoved(function(Class) {
+        if(Class.hasSingleton()) {
+            delete classesSingleton[Class.getHash()];
+        }
+    });
 
     return Singleton;
 });
