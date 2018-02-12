@@ -27,7 +27,7 @@ JARS.module('lang.Type.Class.PrototypeBuilder').$import(['System::isFunction', {
                     hiddenProto[accessIdentifier + property] = value;
                 });
 
-                removeProto(accessIdentifier, accessIdentifierAlias);
+                removeProto(proto, accessIdentifier, accessIdentifierAlias);
             }
 
             return hiddenProto;
@@ -36,12 +36,12 @@ JARS.module('lang.Type.Class.PrototypeBuilder').$import(['System::isFunction', {
         getPublic: function(Class) {
             var proto = this._proto;
 
-            if(hasProto(PRIVILEGED_IDENTIFIER, PRIVILEGED_IDENTIFIER_ALIAS)) {
+            if(hasProto(proto, PRIVILEGED_IDENTIFIER, PRIVILEGED_IDENTIFIER_ALIAS)) {
                 extend(proto, map(filter(getProto(proto, PRIVILEGED_IDENTIFIER, PRIVILEGED_IDENTIFIER_ALIAS), isFunction), function(method) {
                     return privileged(Class, method);
                 }));
 
-                removeProto(PRIVILEGED_IDENTIFIER, PRIVILEGED_IDENTIFIER_ALIAS);
+                removeProto(proto, PRIVILEGED_IDENTIFIER, PRIVILEGED_IDENTIFIER_ALIAS);
             }
 
             return proto;
