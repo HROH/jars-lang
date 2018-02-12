@@ -1,5 +1,5 @@
-JARS.module('lang.Type.Class.Pool').$import(['.::enhance', '::onAdded', '::onRemoved', '..Instance::onRemoved', {
-    Object: ['::hasOwn', 'Info::size']
+JARS.module('lang.Type.Class.Pool').$import(['.::enhance', '.::onAdded', '.::onRemoved', '..Instance::onRemoved', {
+    'lang.Object': ['::hasOwn', 'Info::size']
 }]).$export(function(enhance, onClassAdded, onClassRemoved, onInstanceRemoved, hasOwn, size) {
     'use strict';
 
