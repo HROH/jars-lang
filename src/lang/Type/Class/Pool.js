@@ -82,8 +82,8 @@ JARS.module('lang.Type.Class.Pool').$import(['.::enhance', '.::onAdded', '.::onR
                 autoAdjustFactor = Classes[Class.getHash()].autoAdjustFactor,
                 instance;
 
-            if (poolExhausted && autoAdjustFactor > 0) {
-                Class.adjustPoolSize(Class.getPoolSize() * autoAdjustFactor);
+            if (poolExhausted && autoAdjustFactor > 1) {
+                Class.adjustPoolSize((Class.getPoolSize() || 1) * autoAdjustFactor);
                 poolExhausted = false;
             }
 
