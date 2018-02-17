@@ -3,7 +3,7 @@ JARS.module('lang.Function', ['Advice', 'Combined', 'Flow', 'Guards', 'Modargs']
 }, '.Array::fromArguments', '.Type!Function']).$export(function(isA, isFunction, fromArgs, Fn) {
     'use strict';
 
-    var fnConverter = this.sandbox('__SYSTEM__').add('function(f){return function fn(){return f.apply(this,arguments)};}'),
+    var fnConverter = Fn('f', 'return function fn(){return f.apply(this,arguments)};'),
         applyFunction;
 
     Fn.enhance({
