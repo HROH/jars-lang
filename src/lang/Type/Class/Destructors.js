@@ -1,28 +1,21 @@
-JARS.module('lang.Type.Class.Destructors').$import(['System::isFunction', '.::enhance', '.::remove', '.::onAdded', '.::onRemoved', '..Method.Instance::privileged', 'lang.Object::hasOwn', {
+JARS.module('lang.Type.Class.Destructors').$import(['System::isFunction', '.::enhance', '.::remove', '..ClassMap', {
     'lang.Array': ['Iterate::each', 'Manipulate::mergeUnique'],
-    '..Instance': ['::remove', '::onAdded', '::onRemoved']
-}]).$export(function(isFunction, enhance, removeClass, onClassAdded, onClassRemoved, privileged, hasOwn, each, mergeUnique, removeInstance, onInstanceAdded, onInstanceRemoved) {
+    '..': ['Method.Instance::privileged', 'Instance::remove']
+}]).$export(function(isFunction, enhance, removeClass, ClassMap, each, mergeUnique, privileged, removeInstance) {
     'use strict';
 
-    var Classes = {},
+    var CLASS_DESTRUCTORS = 'destructors',
+        classMap = ClassMap.withKey(CLASS_DESTRUCTORS, function() {
+            return [];
+        }, {
+            onInstanceAdded: function() {
+                return [];
+            }
+        }),
         MSG_ALREADY_DESTRUCTED = '"${instance}" is already destructed',
         Destructors;
 
-    Destructors = {
-        add: function(Class, destructor, instance) {
-            return Class.addDestructor(destructor, instance);
-        },
-
-        destruct: function(Class, instance) {
-            return Class.destructInstance(instance);
-        },
-
-        destructClass: function(Class) {
-            Class.destruct();
-        }
-    };
-
-    enhance({
+    Destructors = enhance({
         /**
          * @param {function():void} destructor
          * @param {Object} instance
@@ -33,7 +26,7 @@ JARS.module('lang.Type.Class.Destructors').$import(['System::isFunction', '.::en
             var Class = this;
 
             if (isFunction(destructor)) {
-                (Class.isInstance(instance) ? getInstanceDestructors(Class, instance) : getClassDestructors(Class)).push(privileged(Class, destructor));
+                (Class.isInstance(instance) ? classMap.getInstance(instance) : classMap.get(Class, CLASS_DESTRUCTORS)).push(privileged(Class, destructor));
             }
 
             return Class;
@@ -45,11 +38,11 @@ JARS.module('lang.Type.Class.Destructors').$import(['System::isFunction', '.::en
          */
         destructInstance: function(instance) {
             var Class = this,
-                destructors = getInstanceDestructors(Class, instance);
+                destructors = classMap.getInstance(instance);
 
             if (Class.isInstance(instance) && destructors) {
                 do {
-                    mergeUnique(destructors, getClassDestructors(Class));
+                    mergeUnique(destructors, classMap.get(Class, CLASS_DESTRUCTORS));
                     Class = Class.getSuperclass();
                 } while (Class);
 
@@ -76,40 +69,12 @@ JARS.module('lang.Type.Class.Destructors').$import(['System::isFunction', '.::en
 
             each(Class.getInstances(), Class.destructInstance, Class);
 
-            each(Class.getSubclasses(), function destructSubclass(Subclass) {
+            each(Class.getSubclasses(), function(Subclass) {
                 Subclass.destruct();
             });
 
             removeClass(Class);
         }
-    });
-
-    function getClassDestructors(Class) {
-        return Classes[Class.getHash()].destructors;
-    }
-
-    function getInstanceDestructors(Class, instance) {
-        return Classes[Class.getHash()].instanceDestructors[instance.getHash()];
-    }
-
-    onClassAdded(function(Class) {
-        Classes[Class.getHash()] = {
-            destructors: [],
-
-            instanceDestructors: {}
-        };
-    });
-
-    onClassRemoved(function(Class) {
-        delete Classes[Class.getHash()];
-    });
-
-    onInstanceAdded(function(instance) {
-        Classes[instance.Class.getHash()].instanceDestructors[instance.getHash()] = [];
-    });
-
-    onInstanceRemoved(function(instance) {
-        delete Classes[instance.Class.getHash()].instanceDestructors[instance.getHash()];
     });
 
     return Destructors;

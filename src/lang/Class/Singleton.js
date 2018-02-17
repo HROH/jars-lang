@@ -1,12 +1,13 @@
-JARS.module('lang.Class.Singleton').$import('lang.Type.Class::onRemoved').$export(function(onClassRemoved) {
+JARS.module('lang.Class.Singleton').$import(['lang.Type.ClassMap', 'lang.Constant']).$export(function(ClassMap, Constant) {
     'use strict';
 
     var ClassFactory = this,
-        classesSingleton = {};
+        SINGLETON = 'singleton',
+        classMap = ClassMap.withKey(SINGLETON, Constant(null));
 
     ClassFactory.addStaticMethods({
         singleton: function() {
-            return classesSingleton[this.getHash()];
+            return classMap.get(this, SINGLETON);
         },
         /**
          * @return {boolean} whether this Class has a singleton
@@ -21,7 +22,7 @@ JARS.module('lang.Class.Singleton').$import('lang.Type.Class::onRemoved').$expor
     });
 
     function toSingleton(Class, args) {
-        classesSingleton[Class.getHash()] = Class.New(args);
+        classMap.set(Class, SINGLETON, Class.New(args));
 
         return Class;
     }
@@ -35,12 +36,6 @@ JARS.module('lang.Class.Singleton').$import('lang.Type.Class::onRemoved').$expor
     }, function(Class) {
         return Class.singleton();
     }, 'You can\'t create a new instance of a Singleton.');
-
-    onClassRemoved(function(Class) {
-        if(Class.hasSingleton()) {
-            delete classesSingleton[Class.getHash()];
-        }
-    });
 
     return Singleton;
 });

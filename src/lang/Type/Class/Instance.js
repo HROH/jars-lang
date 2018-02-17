@@ -1,41 +1,20 @@
-JARS.module('lang.Type.Class.Instance').$import(['.::enhance', '.::onAdded', '.::onRemoved', '.ExtendedPrototypeBuilder::isExtending', {
-    '..Instance': ['::add', '::onAdded', '::onRemoved'],
-    'lang.Object': ['Info::values'],
-    'lang.Array': ['Reduce::reduce', 'Find::find'],
-    'lang.Function': ['Advice::around'],
-    'System': ['::isA', '::isFunction']
-}]).$export(function(enhance, onClassAdded, onClassRemoved, isExtending, addInstance, onInstanceAdded, onInstanceRemoved, values, arrayReduce, find, around, isA, isFunction) {
+JARS.module('lang.Type.Class.Instance').$import(['.::enhance', '..ClassMap', '.ExtendedPrototypeBuilder::isExtending', '..Instance::add', {
+    lang: ['Constant::FALSE', 'Object.Info::values', {
+        Array: ['Reduce::reduce', 'Find::find'],
+        Function: ['::identity', 'Advice::around'],
+    }],
+    System: ['::isA', '::isFunction']
+}]).$export(function(enhance, ClassMap, isExtending, addInstance, FALSE, values, arrayReduce, find, identity, around, isA, isFunction) {
     'use strict';
 
-    var Classes = {},
-        instantiationPredicates = [],
+    var instantiationPredicates = [],
+        SKIP_CONSTRUCTOR = 'skipConstructor',
+        classMap = ClassMap.withKey(SKIP_CONSTRUCTOR, FALSE, {
+            onInstanceAdded: identity
+        }),
         Instance;
 
-    Instance = {
-        isNewableWhen: isNewableWhen,
-
-        isOf: function(Class, instance) {
-            return Class.isInstance(instance);
-        },
-
-        get: function(Class, instanceHash) {
-            return Class.getInstance(instanceHash);
-        },
-
-        getAll: function(Class, includeSubclasses) {
-            return Class.getInstances(includeSubclasses);
-        },
-
-        New: function(Class, instance, args) {
-            return Class.New(instance, args);
-        },
-
-        NewBare: function(Class, instance) {
-            return Class.NewBare(instance);
-        }
-    };
-
-    enhance({
+    Instance = enhance({
         /**
          * Initiates a new instance
          *
@@ -78,7 +57,7 @@ JARS.module('lang.Type.Class.Instance').$import(['.::enhance', '.::onAdded', '.:
 
                     construct = instanceOrArgs.construct;
 
-                    if (!Classes[Class.getHash()].skipConstructor && construct) {
+                    if (!classMap.get(Class, SKIP_CONSTRUCTOR) && construct) {
                         construct.apply(instanceOrArgs, args);
                     }
                 }
@@ -102,17 +81,17 @@ JARS.module('lang.Type.Class.Instance').$import(['.::enhance', '.::onAdded', '.:
         getInstances: function(includeSubclasses) {
             return arrayReduce(includeSubclasses ? this.getSubclasses() : [], function(instances, Subclass) {
                 return instances.concat(Subclass.getInstances(true));
-            }, values(Classes[this.getHash()].instances));
+            }, values(classMap.getInstances(this)));
         },
 
         getInstance: function(instanceHash) {
-            return Classes[this.getHash()].instances[instanceHash] || null;
+            return classMap.getInstances(this)[instanceHash] || null;
         }
     });
 
     function createConstructorToggle(skipConstructor) {
         return function() {
-            Classes[this.getHash()].skipConstructor = skipConstructor;
+            classMap.set(this, SKIP_CONSTRUCTOR, skipConstructor);
         };
     }
 
@@ -131,25 +110,7 @@ JARS.module('lang.Type.Class.Instance').$import(['.::enhance', '.::onAdded', '.:
         });
     }
 
-    onClassAdded(function(Class) {
-        Classes[Class.getHash()] = {
-            skipConstructor: false,
-
-            instances: {}
-        };
-    });
-
-    onClassRemoved(function(Class) {
-        delete Classes[Class.getHash()];
-    });
-
-    onInstanceAdded(function(instance) {
-        Classes[instance.Class.getHash()].instances[instance.getHash()] = instance;
-    });
-
-    onInstanceRemoved(function(instance) {
-        delete Classes[instance.Class.getHash()].instances[instance.getHash()];
-    });
+    Instance.isNewableWhen = isNewableWhen;
 
     return Instance;
 });

@@ -1,8 +1,8 @@
 JARS.module('lang.Class', ['Abstract', 'Final', 'Singleton']).$import(['.Object.Extend::extend', {
     '.Type': ['Instance::is', 'Method.Instance::privilegedWithModule', {
-        Class: ['::enhance', '::add', '::is', '::get', '::getAll', 'PrototypeBuilder', 'Inheritance::isExtendableWhen', 'Instance::isNewableWhen', 'Destructors::destruct', 'Pool']
+        Class: ['::enhance', '::add', '::is', 'PrototypeBuilder', 'Inheritance::isExtendableWhen', 'Instance::isNewableWhen', 'Destructors::destruct', 'Pool']
     }]
-}]).$export(function(extend, isInstance, privilegedWithModule, enhance, addClass, isClass, getClass, getClasses, PrototypeBuilder, isExtendableWhen, isNewableWhen, destruct) {
+}]).$export(function(extend, isInstance, privilegedWithModule, enhance, addClass, isClass, PrototypeBuilder, isExtendableWhen, isNewableWhen, destruct) {
     'use strict';
 
     enhance({
@@ -61,10 +61,6 @@ JARS.module('lang.Class', ['Abstract', 'Final', 'Singleton']).$import(['.Object.
 
             enhance(methods);
         },
-
-        getClass: getClass,
-
-        getClasses: getClasses,
 
         isClass: isClass,
 

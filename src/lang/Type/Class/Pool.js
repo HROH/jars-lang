@@ -1,76 +1,50 @@
-JARS.module('lang.Type.Class.Pool').$import(['.::enhance', '.::onAdded', '.::onRemoved', '..Instance::onRemoved', {
+JARS.module('lang.Type.Class.Pool').$import(['.::enhance', '..ClassMap', {
     'lang.Object': ['::hasOwn', 'Info::size']
-}]).$export(function(enhance, onClassAdded, onClassRemoved, onInstanceRemoved, hasOwn, size) {
+}]).$export(function(enhance, ClassMap, hasOwn, size) {
     'use strict';
 
-    var Classes = {},
+    var FREE = 'free',
+        RESERVED = 'reserved',
+        AUTOADJUST_FACTOR = 'autoAdjustFactor',
+        POOL_SIZE = 'poolSize',
+        classMap = new ClassMap({
+            onAdded: function() {
+                return {
+                    free: [],
+        
+                    reserved: {},
+        
+                    autoAdjustFactor: 0,
+        
+                    poolSize: 0
+                };
+            },
+            
+            onInstanceRemoved: function(instance) {
+                var Class = instance.Class,
+                    reservedInstances = classMap.get(Class, RESERVED),
+                    freeInstances = classMap.get(Class, FREE);
+
+                if(hasOwn(reservedInstances, instance.getHash())) {
+                    delete reservedInstances[instance.getHash()];
+
+                    if (size(reservedInstances) + freeInstances.length < Class.getPoolSize()) {
+                        delete instance.getHash;
+
+                        freeInstances.push(Class.NewBare(instance));
+                    }
+                }
+            }
+        }),
         MSG_POOL_EXHAUSTED = 'Pool exhausted',
         MSG_POOL_NOT_SHRINKABLE = 'Can\'t adjust poolsize. Not enough free instances available.',
         Pool;
 
-    Pool = {
-        release: function(Class, instance) {
-            return Class.release(instance);
-        },
-
-        borrow: function(Class, args) {
-            return Class.borrow(args);
-        },
-
-        getPoolSize: function(Class) {
-            return Class.getPoolSize();
-        },
-
-        getAvailablePoolSize: function(Class) {
-            return Class.getAvailablePoolSize();
-        },
-
-        adjustPoolSize: function(Class, size) {
-            return Class.adjustPoolSize(size);
-        },
-
-        autoAdjustPoolSize: function(Class, autoAdjustFactor) {
-            return Class.autoAdjustPoolSize(autoAdjustFactor);
-        }
-    };
-
-    onClassAdded(function(Class) {
-        Classes[Class.getHash()] = {
-            free: [],
-
-            reserved: {},
-
-            autoAdjustFactor: 0,
-
-            poolSize: 0
-        };
-    });
-
-    onClassRemoved(function(Class) {
-        delete Classes[Class.getHash()];
-    });
-
-    onInstanceRemoved(function(instance) {
-        var Class = instance.Class,
-            reservedInstances = getReservedInstances(Class),
-            freeInstances = getFreeInstances(Class);
-
-        if(hasOwn(reservedInstances, instance.getHash())) {
-            delete reservedInstances[instance.getHash()];
-
-            if (size(reservedInstances) + freeInstances.length < Classes[Class.getHash()].poolSize) {
-                delete instance.getHash;
-
-                freeInstances.push(Class.NewBare(instance));
-            }
-        }
-    });
-
-    enhance({
+    Pool = enhance({
         release: function(instance) {
             var Class = this;
 
-            if (Class.isInstance(instance) && hasOwn(getReservedInstances(Class), instance.getHash())) {
+            if (Class.isInstance(instance) && hasOwn(classMap.get(Class, RESERVED), instance.getHash())) {
                 Class.destructInstance(instance);
             }
         },
@@ -78,8 +52,8 @@ JARS.module('lang.Type.Class.Pool').$import(['.::enhance', '.::onAdded', '.::onR
         borrow: function(args) {
             var Class = this,
                 poolExhausted = !Class.getAvailablePoolSize(),
-                freeInstances = getFreeInstances(Class),
-                autoAdjustFactor = Classes[Class.getHash()].autoAdjustFactor,
+                freeInstances = classMap.get(Class, FREE),
+                autoAdjustFactor = classMap.get(Class, AUTOADJUST_FACTOR),
                 instance;
 
             if (poolExhausted && autoAdjustFactor > 1) {
@@ -90,7 +64,7 @@ JARS.module('lang.Type.Class.Pool').$import(['.::enhance', '.::onAdded', '.::onR
             if (!poolExhausted) {
                 instance = freeInstances.pop();
                 instance.construct.apply(instance, args);
-                getReservedInstances(Class)[instance.getHash()] = instance;
+                classMap.get(Class, RESERVED)[instance.getHash()] = instance;
             }
             else {
                 Class.logger.warn(MSG_POOL_EXHAUSTED);
@@ -100,50 +74,46 @@ JARS.module('lang.Type.Class.Pool').$import(['.::enhance', '.::onAdded', '.::onR
         },
 
         getPoolSize: function() {
-            return Classes[this.getHash()].poolSize;
+            return classMap.get(this, POOL_SIZE);
         },
 
         getAvailablePoolSize: function() {
-            return getFreeInstances(this).length;
+            return classMap.get(this, FREE).length;
         },
 
         adjustPoolSize: function(newSize) {
             var Class = this,
-                sizeDiff = newSize - Class.getPoolSize(),
-                freeInstances = getFreeInstances(Class);
+                poolSize = Class.getPoolSize(),
+                sizeDiff = newSize - poolSize;
 
-            if(freeInstances.length + sizeDiff < 0) {
-                Class.logger.warn(MSG_POOL_NOT_SHRINKABLE);
+            if(Class.getAvailablePoolSize() + sizeDiff > 0) {
+                classMap.set(Class, POOL_SIZE, poolSize + sizeDiff);
+                (sizeDiff > 0 ? expandPool : shrinkPool)(Class, sizeDiff);
             }
             else {
-                Classes[Class.getHash()].poolSize += sizeDiff;
-
-                if (sizeDiff > 0) {
-                    while (sizeDiff--) {
-                        freeInstances.push(Class.NewBare());
-                    }
-                }
-                else {
-                    freeInstances.length += sizeDiff;
-                }
+                Class.logger.warn(MSG_POOL_NOT_SHRINKABLE);
             }
 
             return Class;
         },
 
         autoAdjustPoolSize: function(autoAdjustFactor) {
-            Classes[this.getHash()].autoAdjustFactor = autoAdjustFactor;
+            classMap.set(this, AUTOADJUST_FACTOR, autoAdjustFactor);
 
             return this;
         }
     });
 
-    function getFreeInstances(Class) {
-        return Classes[Class.getHash()].free;
+    function expandPool(Class, sizeDiff) {
+        var freeInstances = classMap.get(Class, FREE);
+
+        while(sizeDiff--) {
+            freeInstances.push(Class.NewBare());
+        }
     }
 
-    function getReservedInstances(Class) {
-        return Classes[Class.getHash()].reserved;
+    function shrinkPool(Class, sizeDiff) {
+        classMap.get(Class, FREE).length += sizeDiff;
     }
 
     return Pool;

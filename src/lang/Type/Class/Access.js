@@ -1,23 +1,9 @@
-JARS.module('lang.Type.Class.Access').$import(['.::enhance', '.::is', '.Module::getBaseName', {
+JARS.module('lang.Type.Class.Access').$import(['.::enhance', '.::is', '.Module::getModuleBaseName', {
     'lang.Array': ['Check::some', 'Search::contains']
 }]).$export(function(enhance, isClass, getModuleBaseName, some, contains) {
     'use strict';
 
-    var Access = {
-        canAccessClass: function(Class, ClassToAccess) {
-            return Class.canAccessClass(ClassToAccess);
-        },
-
-        canAccessModule: function(Class, moduleName) {
-            return Class.canAccessModule(moduleName);
-        },
-
-        getModuleAccess: function(Class) {
-            return Class.getModuleAccess();
-        }
-    };
-
-    enhance({
+    var Access = enhance({
         canAccessClass: function(Class) {
             return isClass(Class) && some(Class.getModuleAccess(), this.canAccessModule, this);
         },

@@ -1,15 +1,16 @@
-JARS.module('lang.Class.Final').$import('lang.Type.Class::onRemoved').$export(function(onClassRemoved) {
+JARS.module('lang.Class.Final').$import(['lang.Type.ClassMap', 'lang.Constant::FALSE']).$export(function(ClassMap, FALSE) {
     'use strict';
 
     var ClassFactory = this,
-        classesIsFinal = {};
+        IS_FINAL = 'isFinal',
+        classMap = ClassMap.withKey(IS_FINAL, FALSE);
 
     ClassFactory.addStaticMethods({
         /**
          * @return {Boolean} whether this Class is a final Class
          */
         isFinal: function() {
-            return classesIsFinal[this.getHash()] || false;
+            return classMap.get(this, IS_FINAL);
         },
         /**
          *
@@ -32,7 +33,7 @@ JARS.module('lang.Class.Final').$import('lang.Type.Class::onRemoved').$export(fu
      * @return {Class} a reference to this Class for chaining
      */
     function toFinal(Class) {
-        classesIsFinal[Class.getHash()] = true;
+        classMap.set(Class, IS_FINAL, true);
 
         return Class;
     }
@@ -40,12 +41,6 @@ JARS.module('lang.Class.Final').$import('lang.Type.Class::onRemoved').$export(fu
     ClassFactory.isExtendableWhen(function(data) {
         return !data.Superclass.isFinal();
     }, 'The given Superclass: "${superclassHash}" is final and can\'t be extended!');
-
-    onClassRemoved(function(Class) {
-        if(Class.isFinal()) {
-            delete classesIsFinal[Class.getHash()];
-        }
-    });
 
     function Final(name, proto, staticProperties) {
         return toFinal(ClassFactory(name, proto, staticProperties));

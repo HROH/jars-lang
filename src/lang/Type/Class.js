@@ -1,13 +1,15 @@
-JARS.module('lang.Type.Class', ['Access', 'Destructors', 'ExtendedPrototypeBuilder', 'Inheritance', 'Instance', 'Module', 'Pool', 'PrototypeBuilder']).$import({
+JARS.module('lang.Type.Class', ['Access', 'Destructors', 'ExtendedPrototypeBuilder', 'Inheritance', 'Instance', 'Module', 'Pool', 'PrototypeBuilder']).$import([{
     System: ['::isA', 'Logger', 'Formatter::format', 'Modules::getCurrentModuleData'],
-    lang: ['::sandbox', 'Array.Iterate::each'],
-    'lang.Object': ['::hasOwn', 'Derive::map', 'Extend::copy', 'Reduce::reduce', 'Iterate::each', {
-        Extend: ['::extend', '::merge']
+    lang: ['::sandbox', 'Function::identity', 'Array::slice', {
+        Object: ['Derive::map', 'Extend::copy', 'Iterate::each', {
+            Extend: ['::extend', '::merge']
+        }]
     }]
-}).$export(function(isA, Logger, format, getCurrentModuleData, sandbox, arrayEach, hasOwn, map, copy, reduce, objectEach, extend, merge) {
+}, '.ClassMap']).$export(function(isA, Logger, format, getCurrentModuleData, sandbox, identity, slice, map, copy, objectEach, extend, merge, ClassMap) {
     'use strict';
 
-    var Classes = {},
+    var CLASS = 'Class',
+        classMap = ClassMap.withKey(CLASS, identity),
         metaClassSandbox = sandbox('__META_CLASS__'),
         MetaClass = metaClassSandbox.add('Function'),
         accessIdentifiers = {
@@ -15,8 +17,6 @@ JARS.module('lang.Type.Class', ['Access', 'Destructors', 'ExtendedPrototypeBuild
             _$: 'protected'
         },
         typeClassLogger = Logger.forCurrentModule(),
-        addListeners = [],
-        removeListeners = [],
         CLASS_BLUEPRINT = '(function(){function ${name}(){return this instanceof ${name}?${name}.New(this,arguments):${name}.New(arguments)};return ${name}})()',
         RE_CLASS = /^[A-Z]\w+$/,
         MSG_INVALID_OR_EXISTING_CLASS = 'Invalid or already existing Class: ${hash}',
@@ -29,6 +29,12 @@ JARS.module('lang.Type.Class', ['Access', 'Destructors', 'ExtendedPrototypeBuild
     TypeClass = {
         enhance: function(methods) {
             extend(MetaClass.prototype, methods);
+
+            return map(methods, function(method) {
+                return function(Class) {
+                    return method.apply(Class, slice(arguments, 1));
+                };
+            });
         },
 
         add: function(name, prototypeBuilder, staticProperties) {
@@ -36,7 +42,7 @@ JARS.module('lang.Type.Class', ['Access', 'Destructors', 'ExtendedPrototypeBuild
                 classHash = createClassHash(name, moduleName),
                 Class;
 
-            if (RE_CLASS.test(name) && !hasOwn(Classes, classHash)) {
+            if (RE_CLASS.test(name) && !classMap.hasHash(classHash)) {
                 Class = metaClassSandbox.add(format(CLASS_BLUEPRINT, {
                     name: name
                 }));
@@ -67,20 +73,13 @@ JARS.module('lang.Type.Class', ['Access', 'Destructors', 'ExtendedPrototypeBuild
                     }
                 }, staticProperties);
 
-                // Store a reference of the Class and define some protected properties
-                Classes[classHash] = {
-                    Class: Class
-                };
+                ClassMap.add(Class);
 
                 objectEach(accessIdentifiers, function(alias, id) {
                     setPrototype(Class, id, prototypeBuilder.getHidden(Class, id, alias));
                 });
 
                 extend(Class.prototype, prototypeBuilder.getPublic(Class));
-
-                arrayEach(addListeners, function(listener) {
-                    listener(Class);
-                });
             }
             else {
                 typeClassLogger.warn(MSG_INVALID_OR_EXISTING_CLASS, {
@@ -107,19 +106,7 @@ JARS.module('lang.Type.Class', ['Access', 'Destructors', 'ExtendedPrototypeBuild
                 name: Class.getClassName()
             }));
 
-            arrayEach(removeListeners, function(listener) {
-                listener(Class);
-            });
-
-            delete Classes[Class.getHash()];
-        },
-
-        onAdded: function(listener) {
-            addListeners.push(listener);
-        },
-
-        onRemoved: function(listener) {
-            removeListeners.push(listener);
+            ClassMap.remove(Class);
         },
 
         getPrototypesOf: function(Class) {
@@ -127,29 +114,9 @@ JARS.module('lang.Type.Class', ['Access', 'Destructors', 'ExtendedPrototypeBuild
                 return copy(getPrototype(Class, id));
             });
         },
-        /**
-         * @param {String} classHashOrName
-         * @param {String} moduleName
-         *
-         * @return {Class}
-         */
-        get: function(classHashOrName, moduleName) {
-            return (Classes[classHashOrName] || Classes[createClassHash(classHashOrName, moduleName || getCurrentModuleData().moduleName)] || {}).Class;
-        },
-        /**
-         *
-         * @return {Array<Class>}
-         */
-        getAll: function() {
-            return reduce(Classes, function(allClasses, classData) {
-                allClasses.push(classData.Class);
-
-                return allClasses;
-            }, []);
-        },
 
         exists: function(Class) {
-            return hasOwn(Classes, Class.getHash());
+            return !!classMap.get(Class, CLASS);
         },
 
         is: function(Class) {
@@ -158,11 +125,15 @@ JARS.module('lang.Type.Class', ['Access', 'Destructors', 'ExtendedPrototypeBuild
     };
 
     function getPrototype(Class, id) {
-        return Classes[Class.getHash()][id + 'proto'];
+        return classMap.get(Class, getPrototypeKey(id));
     }
 
     function setPrototype(Class, id, proto) {
-        Classes[Class.getHash()][id + 'proto'] = proto;
+        classMap.set(Class, getPrototypeKey(id), proto);
+    }
+
+    function getPrototypeKey(id) {
+        return id + 'proto';
     }
 
     function createClassHash(name, moduleName) {

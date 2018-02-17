@@ -1,48 +1,30 @@
-JARS.module('lang.Type.Class.Inheritance').$import(['System::isA', '.::enhance', '.::is', '.::onAdded', '.::onRemoved', '.::addWithSuperclass', '.ExtendedPrototypeBuilder', {
+JARS.module('lang.Type.Class.Inheritance').$import(['System::isA', '.::enhance', '.::is', '.::addWithSuperclass', '..ClassMap', '.ExtendedPrototypeBuilder', {
     lang: ['Object.Reduce::reduce', 'Array.Find::find']
-}]).$export(function(isA, enhance, isClass, onClassAdded, onClassRemoved, addClassWithSuperclass, ExtendedPrototypeBuilder, reduce, find) {
+}]).$export(function(isA, enhance, isClass, addClassWithSuperclass, ClassMap, ExtendedPrototypeBuilder, reduce, find) {
     'use strict';
 
     var extensionPredicates = [],
-        Classes = {},
+        SUPERCLASS = 'superclass',
+        SUBClASSES = 'subclasses',
+        classMap = new ClassMap({
+            onAdded: function() {
+                return {
+                    superclass: null,
+        
+                    subclasses: {}
+                };
+            },
+
+            onRemoved: function(Class) {
+                var Superclass = classMap.get(Class, SUPERCLASS);
+
+                if(Superclass) {
+                    delete classMap.get(Superclass, SUBClASSES)[Class.getHash()];
+                }
+            }
+        }),
         MSG_NO_EXTEND = 'The Class can\'t be extended! ',
         Inheritance;
-
-    Inheritance = {
-        isExtendableWhen: isExtendableWhen,
-
-        getSuperclass: function(Class) {
-            return Class.getSuperclass();
-        },
-
-        getSubclasses: function(Class) {
-            return Class.getSubclasses();
-        },
-
-        hasSuperclass: function(Class) {
-            return Class.hasSuperclass();
-        },
-
-        hasSubclasses: function(Class) {
-            return Class.hasSubclasses();
-        },
-
-        isSubclassOf: function(Class, Superclass) {
-            return Class.isSubclassOf(Superclass);
-        },
-
-        isSuperclassOf: function(Class, Subclass) {
-            return Class.isSuperclassOf(Subclass);
-        },
-
-        isOf: function(Class, CompareClass) {
-            return Class.isOf(CompareClass);
-        },
-
-        extendz: function(Class, Superclass, proto, staticProperties) {
-            return Class.extendz(Superclass, proto, staticProperties);
-        }
-    };
 
     /**
      * @param {function(Class):Boolean} predicate
@@ -80,18 +62,18 @@ JARS.module('lang.Type.Class.Inheritance').$import(['System::isA', '.::enhance',
         return !data.Superclass.isSubclassOf(data.Class);
     }, 'The given Superclass: "${superclassHash}" is already inheriting from this Class!');
 
-    enhance({
+    Inheritance = enhance({
         /**
          * @return {Class} the Superclass of this Class
          */
         getSuperclass: function() {
-            return Classes[this.getHash()].superclass;
+            return classMap.get(this, SUPERCLASS);
         },
         /**
          * @return {Array.<Class>} an array of all Subclasses
          */
         getSubclasses: function(includeSubclasses) {
-            return reduce(Classes[this.getHash()].subclasses, function(subclasses, Subclass) {
+            return reduce(classMap.get(this, SUBClASSES), function(subclasses, Subclass) {
                 subclasses.push(Subclass);
 
                 return includeSubclasses ? subclasses.concat(Subclass.getSubclasses(true)) : subclasses;
@@ -156,31 +138,15 @@ JARS.module('lang.Type.Class.Inheritance').$import(['System::isA', '.::enhance',
             else {
                 addClassWithSuperclass(Class, Superclass, new ExtendedPrototypeBuilder(proto), staticProperties);
 
-                Classes[Class.getHash()].superclass = Superclass;
-                Classes[Superclass.getHash()].subclasses[Class.getHash()] = Class;
+                classMap.set(Class, SUPERCLASS, Superclass);
+                classMap.get(Superclass, SUBClASSES)[Class.getHash()] = Class;
             }
 
             return Class;
         }
     });
 
-    onClassAdded(function(Class) {
-        Classes[Class.getHash()] = {
-            superclass: null,
-
-            subclasses: {}
-        };
-    });
-
-    onClassRemoved(function(Class) {
-        var Superclass = Classes[Class.getHash()].superclass;
-
-        if(Superclass) {
-            delete Classes[Superclass.getHash()].subclasses[Class.getHash()];
-        }
-
-        delete Classes[Class.getHash()];
-    });
+    Inheritance.isExtendableWhen = isExtendableWhen;
 
     return Inheritance;
 });

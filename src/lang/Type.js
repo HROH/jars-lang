@@ -1,4 +1,4 @@
-JARS.module('lang.Type', ['Class', 'Instance', 'Method']).meta({
+JARS.module('lang.Type', ['Class', 'ClassMap', 'Instance', 'Method']).meta({
 	plugIn: function(pluginRequest) {
         var requestor = pluginRequest.requestor,
 			EXTENSION_DELIMITER = ',',

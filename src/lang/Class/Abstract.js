@@ -1,15 +1,16 @@
-JARS.module('lang.Class.Abstract').$import('lang.Type.Class::onRemoved').$export(function(onClassRemoved) {
+JARS.module('lang.Class.Abstract').$import(['lang.Type.ClassMap', 'lang.Constant::FALSE']).$export(function(ClassMap, FALSE) {
     'use strict';
 
     var ClassFactory = this,
-        classesIsAbstract = {};
+        IS_ABSTRACT = 'isAbstract',
+        classMap = ClassMap.withKey(IS_ABSTRACT, FALSE);
 
     ClassFactory.addStaticMethods({
         /**
          * @return {Boolean} whether this Class is an abstract Class
          */
         isAbstract: function() {
-            return classesIsAbstract[this.getHash()] || false;
+            return classMap.get(this, IS_ABSTRACT);
         },
         /**
          *
@@ -32,7 +33,7 @@ JARS.module('lang.Class.Abstract').$import('lang.Type.Class::onRemoved').$export
      * @return {Class} a reference to this Class for chaining
      */
     function toAbstract(Class) {
-        classesIsAbstract[Class.getHash()] = true;
+        classMap.set(Class, IS_ABSTRACT, true);
 
         return Class;
     }
@@ -58,12 +59,6 @@ JARS.module('lang.Class.Abstract').$import('lang.Type.Class::onRemoved').$export
             this.Class.logger.error('Override ${0}()!', [methodName]);
         };
     };
-
-    onClassRemoved(function(Class) {
-        if(Class.isAbstract()) {
-            delete classesIsAbstract[Class.getHash()];
-        }
-    });
 
     return Abstract;
 });

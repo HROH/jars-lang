@@ -1,25 +1,7 @@
 JARS.module('lang.Type.Class.Module').$import(['System.Modules::use', '.::enhance']).$export(function(use, enhance) {
     'use strict';
 
-    var Module = {
-        getName: function(Class) {
-            return Class.getModuleName();
-        },
-
-        getBaseName: function(Class) {
-            return Class.getModuleBaseName();
-        },
-
-        get: function(Class) {
-            return Class.getModule();
-        },
-
-        getBase: function(Class) {
-            return Class.getModuleBase();
-        }
-    };
-
-    enhance({
+    var Module = enhance({
         getModuleBaseName: function() {
             var Class = this,
                 moduleName = Class.getModuleName();
@@ -35,6 +17,10 @@ JARS.module('lang.Type.Class.Module').$import(['System.Modules::use', '.::enhanc
             return use(this.getModuleBaseName());
         }
     });
+
+    Module.getModuleName = function(Class) {
+        return Class.getModuleName();
+    };
 
     return Module;
 });

@@ -1,12 +1,22 @@
-JARS.module('lang.Type.Instance').$import(['lang::generateHash', 'lang.Array.Iterate::each', {
-    '.Class': ['::exists', '::is', '::onAdded', '::onRemoved', '::getPrototypesOf'],
+JARS.module('lang.Type.Instance').$import(['lang::generateHash', '.ClassMap', {
+    '.Class': ['::exists', '::is', '::getPrototypesOf'],
     'lang.Object': ['::hasOwn', 'Extend::extend', 'Manipulate::update']
-}]).$export(function(generateHash, arrayEach, existsClass, isClass, onClassAdded, onClassRemoved, getPrototypesOf, hasOwn, extend, update) {
+}]).$export(function(generateHash, ClassMap, existsClass, isClass, getPrototypesOf, hasOwn, extend, update) {
     'use strict';
 
-    var Classes = {},
-        addListeners = [],
-        removeListeners = [],
+    var classMap = new ClassMap({
+            onAdded: function() {
+                return {};
+            },
+
+            onInstanceAdded: function(instance) {
+                return extend({
+                    instance: instance,
+    
+                    $isElevated: false
+                }, getPrototypesOf(instance.Class));
+            }
+        }),
         PROTECTED_IDENTIFIER = '_$',
         //PRIVATE_IDENTIFIER = '_',
         Instance;
@@ -15,7 +25,7 @@ JARS.module('lang.Type.Instance').$import(['lang::generateHash', 'lang.Array.Ite
         add: function(instance) {
             var Class = instance.Class,
                 instanceHashPrefix = 'Object #<' + Class.getModuleName() + ':' + Class.getClassName() + '#',
-                instances = Classes[Class.getHash()],
+                instances = classMap.getInstances(Class),
                 instanceHash;
 
             do {
@@ -28,37 +38,17 @@ JARS.module('lang.Type.Instance').$import(['lang::generateHash', 'lang.Array.Ite
                 return instanceHash;
             };
 
-            instances[instanceHash] = extend({
-                instance: instance,
-
-                $isElevated: false
-            }, getPrototypesOf(Class));
-
-            arrayEach(addListeners, function(listener) {
-                listener(instance);
-            });
+            ClassMap.addInstance(instance);
 
             return instance;
         },
 
         remove: function(instance) {
-            arrayEach(removeListeners, function(listener) {
-                listener(instance);
-            });
-
-            delete Classes[instance.Class.getHash()][instance.getHash()];
-        },
-
-        onAdded: function(listener) {
-            addListeners.push(listener);
-        },
-
-        onRemoved: function(listener) {
-            removeListeners.push(listener);
+            ClassMap.removeInstance(instance);
         },
 
         exists: function(instance) {
-            return existsClass(instance.Class) && hasOwn(Classes[instance.Class.getHash()], instance.getHash());
+            return existsClass(instance.Class) && !!classMap.getInstance(instance);
         },
 
         is: function(instance) {
@@ -66,11 +56,11 @@ JARS.module('lang.Type.Instance').$import(['lang::generateHash', 'lang.Array.Ite
         },
 
         isElevated: function(instance) {
-            return getHiddenInstance(instance).$isElevated;
+            return classMap.getInstance(instance).$isElevated;
         },
 
         elevate: function(instance) {
-            var hiddenInstance = getHiddenInstance(instance);
+            var hiddenInstance = classMap.getInstance(instance);
 
             if(!hiddenInstance.$isElevated) {
                 extend(instance, hiddenInstance[PROTECTED_IDENTIFIER]);
@@ -79,7 +69,7 @@ JARS.module('lang.Type.Instance').$import(['lang::generateHash', 'lang.Array.Ite
         },
 
         commit: function(instance) {
-            var hiddenInstance = getHiddenInstance(instance);
+            var hiddenInstance = classMap.getInstance(instance);
 
             if(hiddenInstance.$isElevated) {
                 update(hiddenInstance[PROTECTED_IDENTIFIER], function(value, property) {
@@ -94,18 +84,6 @@ JARS.module('lang.Type.Instance').$import(['lang::generateHash', 'lang.Array.Ite
             }
         }
     };
-
-    function getHiddenInstance(instance) {
-        return Classes[instance.Class.getHash()][instance.getHash()];
-    }
-
-    onClassAdded(function(Class) {
-        Classes[Class.getHash()] = {};
-    });
-
-    onClassRemoved(function(Class) {
-        delete Classes[Class.getHash()];
-    });
 
     return Instance;
 });
