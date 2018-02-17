@@ -117,23 +117,24 @@ JARS.module('lang.Type', ['Class', 'ClassMap', 'Instance', 'Method']).meta({
      */
     function createDelegate(method) {
         /**
-         *
          * @param {*} targetObject
          *
          * @return {*}
          */
-        function delegater(targetObject) {
-            var slicedArgs = [],
-                argLen = arguments.length;
+        return function delegater(targetObject) {
+            return method.apply(targetObject, sliceArgs(arguments));
+        };
+    }
+
+    function sliceArgs(args) {
+        var slicedArgs = [],
+                argLen = args.length;
 
             while (--argLen) {
-                slicedArgs[argLen - 1] = arguments[argLen];
+                slicedArgs[argLen - 1] = args[argLen];
             }
 
-            return method.apply(targetObject, slicedArgs);
-        }
-
-        return delegater;
+        return slicedArgs;
     }
 
     return Type;

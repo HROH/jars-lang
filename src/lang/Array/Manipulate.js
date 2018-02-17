@@ -7,27 +7,21 @@ JARS.module('lang.Array.Manipulate').$import(['System::isArrayLike', '.::enhance
 
     return enhance({
         merge: function(array) {
-            if (isArrayLike(array)) {
-                this.push.apply(this, array);
-            }
+            isArrayLike(array) && this.push.apply(this, array);
 
             return this;
         },
 
         mergeUnique: function(sourceArray) {
-            var destArray = this;
-
-            return transduce(filter(negate(partial(contains, destArray))), ArrayCollector.step, destArray, sourceArray);
+           return transduce(filter(negate(partial(contains, this))), ArrayCollector.step, this, sourceArray);
         },
 
         removeAll: function(array) {
             var arr = this;
 
             forEach(array, function(item) {
-                var index;
-
-                while ((index = indexOf(arr, item)) != -1) {
-                    arr.splice(index, 1);
+                while (contains(arr, item)) {
+                    arr.splice(indexOf(arr, item), 1);
                 }
             });
 

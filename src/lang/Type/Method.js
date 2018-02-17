@@ -1,9 +1,10 @@
-JARS.module('lang.Type.Method', ['Array', 'Class', 'Instance', 'Object', 'Transduced']).$import(['..Function.Advice::before', {
+JARS.module('lang.Type.Method', ['Array', 'Class', 'Instance', 'Object', 'Transduced']).$import(['System.Formatter::format', {
+    '..Function': ['Advice::before', 'Modargs::partial', 'Modargs::PLACEHOLDER'],
     '..assert': ['::isNotNil', 'Type::isFunction']
-}]).$export(function(before, assertIsNotNil, assertIsFunction) {
+}]).$export(function(format, before, partial, PLACEHOLDER, assertIsNotNil, assertIsFunction) {
     'use strict';
 
-    var MSG_NO_CALLBACK = 'The callback is not a function',
+    var formatAssertionMessage = partial(format, '${0}.prototype.${1} called on null or undefined'),
         Method;
 
     Method = {
@@ -11,21 +12,15 @@ JARS.module('lang.Type.Method', ['Array', 'Class', 'Instance', 'Object', 'Transd
             return before(method, createAssert(typeName, methodName));
         },
 
-        withCallbackAssert: function(method) {
-            return before(method, callbackAssert);
-        }
+        withCallbackAssert: partial(before, PLACEHOLDER, partial(assertIsFunction, PLACEHOLDER, 'The callback is not a function'))
     };
 
     function createAssert(typeName, methodName) {
-        var assertionMessage = typeName + '.prototype.' + methodName + ' called on null or undefined';
+        var assertionMessage = formatAssertionMessage([typeName, methodName]);
 
         return function() {
             assertIsNotNil(this, assertionMessage);
         };
-    }
-
-    function callbackAssert(callback) {
-        assertIsFunction(callback, MSG_NO_CALLBACK);
     }
 
     return Method;

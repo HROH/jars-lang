@@ -6,14 +6,17 @@ JARS.module('lang.Type.Method.Array').$import(['.::withAssert', {
 }]).$export(function(withAssert, withCallback, withTransducer, noop, compose, partial, ArrayCollector, map) {
     'use strict';
 
-    var ArrayMethod = {
+    var ARRAY = 'Array',
+        ArrayMethod;
+        
+    ArrayMethod = {
         withCallback: function(methodName, transduceOptions) {
-            return withCallback('Array', methodName, getTransduceOptions(transduceOptions || {}));
+            return withCallback(ARRAY, methodName, getTransduceOptions(transduceOptions || {}));
         },
 
-        withTransducer: partial(withTransducer, 'Array'),
+        withTransducer: partial(withTransducer, ARRAY),
 
-        withAssert: partial(withAssert, 'Array')
+        withAssert: partial(withAssert, ARRAY)
     };
 
     function getTransduceOptions(transduceOptions) {

@@ -2,9 +2,9 @@ JARS.module('lang.Type.Method.Instance').$import([{
     System: ['Logger', {
         Modules: ['::getCurrentModuleData', '::use']
     }],
-    'lang.Function': ['::apply', '::attempt', '::getArity', '::setArity'],
+    'lang.Function': ['::apply', '::attempt', '::getArity', '::setArity', 'Advice::before', 'Guards::once'],
     '..Class': ['::is', 'Access']
-}, '..Instance', 'lang.Object.Extend::extend']).$export(function(Logger, getCurrentModuleData, useModule, applyFunction, attempt, getArity, setArity, isClass, Access, TypeInstance, extend) {
+}, '..Instance', 'lang.Object.Extend::extend']).$export(function(Logger, getCurrentModuleData, use, applyFunction, attempt, getArity, setArity, before, once, isClass, Access, TypeInstance, extend) {
     'use strict';
 
     var instanceLogger = Logger.forCurrentModule(),
@@ -21,11 +21,11 @@ JARS.module('lang.Type.Method.Instance').$import([{
         privilegedWithClass: function(Class) {
             var moduleName;
 
-            return function(instance, method, args) {
-                moduleName || (moduleName = Class.getModuleBaseName());
-
+            return before(function(instance, method, args) {
                 return handlePrivileged(Class, instance, method, args, moduleName);
-            };
+            }, once(function() {
+                moduleName = Class.getModuleBaseName();
+            }));
         },
 
         privileged: function(Class, method) {
@@ -38,11 +38,11 @@ JARS.module('lang.Type.Method.Instance').$import([{
             var moduleName = getCurrentModuleData().moduleName,
                 Class;
 
-            return function(instance, method, args) {
-                Class || (Class = useModule(moduleName));
-
+            return before(function(instance, method, args) {
                 return handlePrivileged(Class, instance, method, args, moduleName);
-            };
+            }, once(function() {
+                Class = use(moduleName);
+            }));
         }
     };
 
@@ -129,7 +129,7 @@ JARS.module('lang.Type.Method.Instance').$import([{
         TypeInstance.commit(instance);
 
         if(result.error) {
-            throw new Error(result.error.message);
+            throw result.error;
         }
 
         return result.value;
