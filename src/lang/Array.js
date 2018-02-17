@@ -48,21 +48,28 @@ JARS.module('lang.Array', ['Check', 'Derive', 'Find', 'Item', 'Iterate', 'Manipu
         var index = 0,
             newArray, len;
 
-        assertIsNotNil(arrayLike, MSG_REQUIRES_ARRAYLIKE);
-
-        mapFn && assertIsFunction(mapFn, MSG_NO_FUNCTION);
+        assertArguments(arrayLike, mapFn);
 
         len = arrayLike.length >>> 0;
 
         newArray = Arr(len);
 
         while (index < len) {
-            newArray[index] = mapFn ? mapFn.call(context, arrayLike[index], index) : arrayLike[index];
+            newArray[index] = getItem(arrayLike, index, mapFn, context);
 
             index++;
         }
 
         return newArray;
+    }
+
+    function assertArguments(arrayLike, mapFn) {
+        assertIsNotNil(arrayLike, MSG_REQUIRES_ARRAYLIKE);
+        mapFn && assertIsFunction(mapFn, MSG_NO_FUNCTION);
+    }
+
+    function getItem(arrayLike, index, mapFn, context) {
+        return mapFn ? mapFn.call(context, arrayLike[index], index) : arrayLike[index];
     }
 
     return Arr;
