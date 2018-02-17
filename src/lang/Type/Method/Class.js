@@ -1,8 +1,6 @@
 JARS.module('lang.Type.Method.Class').$import(['System::isFunction', {
-    lang: [{
-        Function: ['::apply', 'Advice::around']
-    }, 'Array.Search::contains', 'Object.Manipulate::update']
-}]).$export(function(isFunction, applyFunction, around, contains, update) {
+    lang: ['Function.Advice::around', 'Array.Search::contains', 'Object.Manipulate::update']
+}]).$export(function(isFunction, around, contains, update) {
     'use strict';
 
     var excludeOverride = ['Class', 'constructor', 'getHash', '$proxy'],
@@ -11,9 +9,7 @@ JARS.module('lang.Type.Method.Class').$import(['System::isFunction', {
     ClassMethod = {
         overrideAll: function(proto, superProto) {
             return update(proto, function(method, methodName) {
-                return canOverride(method, methodName, superProto) ? override(method, function $super() {
-                    return applyFunction(superProto[methodName], this, arguments);
-                }) : method;
+                return canOverride(method, methodName, superProto) ? override(method, superProto[methodName]) : method;
             });
         }
     };
@@ -30,12 +26,12 @@ JARS.module('lang.Type.Method.Class').$import(['System::isFunction', {
     function override(method, superMethod) {
         var currentSuper;
 
-        return around(method, function beforeMethodCall() {
+        return around(method, function() {
             currentSuper = this.$super;
 
             // create a new temporary this.$super that uses the method of the Superclass.prototype
             this.$super = superMethod;
-        }, function afterMethodCall() {
+        }, function() {
             // restore or delete this.$super
             if (currentSuper) {
                 this.$super = currentSuper;
