@@ -1,4 +1,4 @@
-JARS.module('lang.Array.Item').$import(['.::enhance', '.::slice']).$export(function(enhance, slice) {
+JARS.module('lang.Array.Item').$import(['.::enhance', '.::slice', '.Index::getAbsolute']).$export(function(enhance, slice, getAbsoluteIndex) {
     'use strict';
 
     var Item = enhance({
@@ -19,7 +19,7 @@ JARS.module('lang.Array.Item').$import(['.::enhance', '.::slice']).$export(funct
         },
 
         nth: function(index) {
-            return this[index < 0 ? this.length + index : index];
+            return this[getAbsoluteIndex(this, index)];
         }
     });
 
