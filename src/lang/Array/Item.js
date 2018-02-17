@@ -1,17 +1,27 @@
-JARS.module('lang.Array.Item').$import('.::enhance').$export(function(enhance) {
+JARS.module('lang.Array.Item').$import(['.::enhance', '.::slice']).$export(function(enhance, slice) {
     'use strict';
 
-    return enhance({
+    var Item = enhance({
         head: function() {
-            return this[0];
+            return Item.nth(this, 0);
         },
 
         tail: function() {
-            return this[this.length - 1];
+            return slice(this, 1);
+        },
+
+        init: function() {
+            return slice(this, 0, -1);
+        },
+
+        last: function() {
+            return Item.nth(this, -1);
         },
 
         nth: function(index) {
-            return this[index];
+            return this[index < 0 ? this.length + index : index];
         }
     });
+
+    return Item;
 });

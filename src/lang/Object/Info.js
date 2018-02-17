@@ -1,11 +1,11 @@
 JARS.module('lang.Object.Info').$import(['.::enhance', '.::hasOwn', '.Reduce::reduce', {
     'lang.Array': ['::from', 'Reduce::reduce', {
-        Item: ['::head', '::tail']
+        Item: ['::head', '::last']
     }],
     'lang.Function.Modargs': ['::PLACEHOLDER', '::partial'],
     'lang.Type.Method.Object': ['::withAssert', '::withTransducer'],
     lang: ['transcollectors.Array', 'transducers::map', 'operations.Arithmetic::add']
-}]).$export(function(enhance, hasOwn, objectReduce, fromArray, arrayReduce, head, tail, PLACEHOLDER, partial, withAssert, withTransducer, ArrayCollector, map, add) {
+}]).$export(function(enhance, hasOwn, objectReduce, fromArray, arrayReduce, head, last, PLACEHOLDER, partial, withAssert, withTransducer, ArrayCollector, map, add) {
     'use strict';
 
     var withTransducerToArray = partial(withTransducer, PLACEHOLDER, ArrayCollector),
@@ -26,6 +26,6 @@ JARS.module('lang.Object.Info').$import(['.::enhance', '.::hasOwn', '.Reduce::re
             return objectReduce(this, countProperties, 0);
         }),
 
-        values: withTransducerToArray('values', map(tail))
+        values: withTransducerToArray('values', map(last))
     });
 });
