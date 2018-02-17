@@ -1,7 +1,6 @@
 JARS.module('lang.Function.Modargs').$import(['.::enhance', '.::from', '.::apply', '.::getArity', {
-    '..Array': ['::from', '::reverse'],
-    '..transducers': ['::intoArray', '::map']
-}]).$export(function(enhance, fromFunction, applyFunction, getArity, fromArgs, reverseArray, intoArray, map) {
+    '..Array': ['::from', '::reverse']
+}]).$export(function(enhance, fromFunction, applyFunction, getArity, fromArgs, reverseArray) {
     'use strict';
 
     var Modargs = enhance({
@@ -72,15 +71,15 @@ JARS.module('lang.Function.Modargs').$import(['.::enhance', '.::from', '.::apply
             return fromFunction(function mappedFn() {
                 var replaceArgs = isPartial ? fromArgs(arguments) : args.slice();
 
-                return applyFunction(fn, this, intoArray(replacePlaceholders(replaceArgs), isPartial ? args : fromArgs(arguments)).concat(replaceArgs));
+                return applyFunction(fn, this, fromArgs(isPartial ? args : arguments, replacePlaceholders(replaceArgs)).concat(replaceArgs));
             }, getArity(fn));
         };
     }
 
     function replacePlaceholders(replaceArgs) {
-        return map(function(defaultArg) {
+        return function(defaultArg) {
             return defaultArg === Modargs.PLACEHOLDER ? replaceArgs.shift() : defaultArg;
-        });
+        };
     }
 
     return Modargs;
