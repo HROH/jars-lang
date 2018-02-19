@@ -38,9 +38,9 @@ JARS.module('lang.Class.Final').$import(['lang.Type.ClassMap', 'lang.Constant::F
         return Class;
     }
 
-    ClassFactory.isExtendableWhen(function(data) {
-        return !data.Superclass.isFinal();
-    }, 'The given Superclass: "${superclassHash}" is final and can\'t be extended!');
+    ClassFactory.isExtendableWhen(function(Class, Superclass) {
+        return !Superclass.isFinal();
+    }, 'The given Superclass: "${superclass}" is final and can\'t be extended!');
 
     function Final(name, proto, staticProperties) {
         return toFinal(ClassFactory(name, proto, staticProperties));

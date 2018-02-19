@@ -1,6 +1,6 @@
 JARS.module('lang.Type.Class.Inheritance').$import(['System::isA', '.::enhance', '.::is', '.::addWithSuperclass', '..ClassMap', '.ExtendedPrototypeBuilder', {
-    lang: ['Object.Reduce::reduce', 'Array.Find::find']
-}]).$export(function(isA, enhance, isClass, addClassWithSuperclass, ClassMap, ExtendedPrototypeBuilder, reduce, find) {
+    lang: ['Object.Reduce::reduce', 'Array.Find::find', 'Function::negate', 'operations.Comparison::nseq']
+}]).$export(function(isA, enhance, isClass, addClassWithSuperclass, ClassMap, ExtendedPrototypeBuilder, reduce, find, negate, nseq) {
     'use strict';
 
     var extensionPredicates = [],
@@ -30,37 +30,21 @@ JARS.module('lang.Type.Class.Inheritance').$import(['System::isA', '.::enhance',
      * @param {function(Class):Boolean} predicate
      * @param {String} message
      */
-    function isExtendableWhen(predicate, message) {
+    function isExtendableWhen(predicate, message, getData) {
         extensionPredicates.push({
             predicate: predicate,
 
-            message: message
+            message: message,
+
+            getData: getData || getDefaultData
         });
     }
-
-    isExtendableWhen(function superclassIsGiven(data) {
-        return isClass(data.Superclass);
-    }, 'There is no Superclass given!');
-
-    isExtendableWhen(function superclassIsNotSelf(data) {
-        return data.Superclass !== data.Class;
-    }, 'The Class can\'t extend itself!');
-
-    isExtendableWhen(function classHasNoSuperclass(data) {
-        var hasNoSuperclass = !data.Class.hasSuperclass();
-
-        hasNoSuperclass || (data.Superclass = data.Class.getSuperclass());
-
-        return hasNoSuperclass;
-    }, 'The Class already has the Superclass: "${superclassHash}"!');
-
-    isExtendableWhen(function classHasNoInstancesAndSubclasses(data) {
-        return !data.Class.getInstances().length && !data.Class.hasSubclasses();
-    }, 'The Class already has instances or Subclasses!');
-
-    isExtendableWhen(function superclassIsNoSubclassOfClass(data) {
-        return !data.Superclass.isSubclassOf(data.Class);
-    }, 'The given Superclass: "${superclassHash}" is already inheriting from this Class!');
+    
+    function getDefaultData(Class, Superclass) {
+        return {
+            superclass: Superclass.getHash()
+        };
+    }
 
     Inheritance = enhance({
         /**
@@ -122,18 +106,12 @@ JARS.module('lang.Type.Class.Inheritance').$import(['System::isA', '.::enhance',
          */
         extendz: function(Superclass, proto, staticProperties) {
             var Class = this,
-                data = {
-                    Class: Class,
-                    Superclass: Superclass
-                },
                 foundFail = find(extensionPredicates, function(predicateData) {
-                    return !predicateData.predicate(data);
+                    return !predicateData.predicate(Class, Superclass);
                 });
 
             if (foundFail) {
-                Class.logger.error(MSG_NO_EXTEND + foundFail.message, {
-                    superclassHash: data.Superclass.getHash()
-                });
+                Class.logger.error(MSG_NO_EXTEND + foundFail.message, foundFail.getData(Class, Superclass));
             }
             else {
                 addClassWithSuperclass(Class, Superclass, new ExtendedPrototypeBuilder(proto), staticProperties);
@@ -147,6 +125,26 @@ JARS.module('lang.Type.Class.Inheritance').$import(['System::isA', '.::enhance',
     });
 
     Inheritance.isExtendableWhen = isExtendableWhen;
+
+    isExtendableWhen(function(Class, Superclass) {
+        return isClass(Superclass);
+    }, 'There is no Superclass given!');
+
+    isExtendableWhen(nseq, 'The Class can\'t extend itself!');
+
+    isExtendableWhen(negate(Inheritance.hasSuperclass), 'The Class already has the Superclass: "${superclass}"!', function(Class) {
+        return {
+            superclass: Class.getSuperclass().getHash()
+        };
+    });
+
+    isExtendableWhen(function(Class) {
+        return !Class.getInstances().length && !Class.hasSubclasses();
+    }, 'The Class already has instances or Subclasses!');
+
+    isExtendableWhen(function(Class, Superclass) {
+        return !Superclass.isSubclassOf(Class);
+    }, 'The given Superclass: "${superclass}" is already inheriting from this Class!');
 
     return Inheritance;
 });

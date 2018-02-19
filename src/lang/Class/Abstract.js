@@ -46,9 +46,9 @@ JARS.module('lang.Class.Abstract').$import(['lang.Type.ClassMap', 'lang.Constant
         return {};
     }, 'You can\'t create a new instance of an abstract Class.');
 
-    ClassFactory.isExtendableWhen(function(data) {
-        return !data.Class.isAbstract() || data.Superclass.isAbstract();
-    }, 'The given Superclass: "${superclassHash}" is not abstract and can\'t be extended by an abstract Class!');
+    ClassFactory.isExtendableWhen(function(Class, Superclass) {
+        return !Class.isAbstract() || Superclass.isAbstract();
+    }, 'The given Superclass: "${superclass}" is not abstract and can\'t be extended by an abstract Class!');
 
     function Abstract(name, proto, staticProperties) {
         return toAbstract(ClassFactory(name, proto, staticProperties));
