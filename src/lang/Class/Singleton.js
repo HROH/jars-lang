@@ -33,9 +33,9 @@ JARS.module('lang.Class.Singleton').$import(['lang.Type.ClassMap', 'lang.Constan
 
     ClassFactory.isNewableWhen(function(Class) {
         return !Class.hasSingleton();
-    }, function(Class) {
+    }, 'You can\'t create a new instance of a Singleton.', function(Class) {
         return Class.singleton();
-    }, 'You can\'t create a new instance of a Singleton.');
+    });
 
     return Singleton;
 });

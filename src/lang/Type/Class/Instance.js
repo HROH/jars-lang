@@ -97,10 +97,10 @@ JARS.module('lang.Type.Class.Instance').$import(['.::enhance', '..ClassMap', '.E
 
     /**
      * @param {function(Class):Boolean} predicate
-     * @param {function(Class):*} optionalReturn
      * @param {String} message
+     * @param {function(Class):*} optionalReturn
      */
-    function isNewableWhen(predicate, optionalReturn, message) {
+    Instance.isNewableWhen = function(predicate, message, optionalReturn) {
         instantiationPredicates.push({
             predicate: predicate,
 
@@ -108,9 +108,7 @@ JARS.module('lang.Type.Class.Instance').$import(['.::enhance', '..ClassMap', '.E
 
             ret: optionalReturn
         });
-    }
-
-    Instance.isNewableWhen = isNewableWhen;
+    };
 
     return Instance;
 });
