@@ -63,7 +63,7 @@ JARS.module('lang.Type.Class.Pool').$import(['.::enhance', '..ClassMap', {
 
             if (!poolExhausted) {
                 instance = freeInstances.pop();
-                instance.construct.apply(instance, args);
+                Class.construct(instance, args);
                 classMap.get(Class, RESERVED)[instance.getHash()] = instance;
             }
             else {

@@ -25,7 +25,7 @@ JARS.module('lang.Type.Class.Instance').$import(['.::enhance', '..ClassMap', '.E
          */
         New: function(instanceOrArgs, args) {
             var Class = this,
-                construct, returnValue, foundFail;
+                returnValue, foundFail;
 
             // isExtending() is true when a Subclass is inheriting over Subclass.extendz(Superclass)
             // In this case we don't need the constructor to be executed neither do we need a new instance to be saved
@@ -55,11 +55,7 @@ JARS.module('lang.Type.Class.Instance').$import(['.::enhance', '..ClassMap', '.E
                         returnValue = instanceOrArgs = Class.NewBare();
                     }
 
-                    construct = instanceOrArgs.construct;
-
-                    if (!classMap.get(Class, SKIP_CONSTRUCTOR) && construct) {
-                        construct.apply(instanceOrArgs, args);
-                    }
+                    Class.construct(instanceOrArgs, args);
                 }
             }
 
@@ -71,6 +67,12 @@ JARS.module('lang.Type.Class.Instance').$import(['.::enhance', '..ClassMap', '.E
 
             return Class.isInstance(instance) ? Class.New(instance) : new Class();
         }, createConstructorToggle(true), createConstructorToggle(false)),
+
+        construct: function(instance, args) {
+            if (!classMap.get(this, SKIP_CONSTRUCTOR) && instance.construct) {
+                instance.construct.apply(instance, args);
+            }
+        },
 
         isInstance: function(instance) {
             return isA(instance, this);
