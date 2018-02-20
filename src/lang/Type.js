@@ -128,10 +128,10 @@ JARS.module('lang.Type', ['Class', 'ClassMap', 'Instance', 'Method']).meta({
 
     function sliceArgs(args) {
         var slicedArgs = [],
-                argLen = args.length;
+                argsLen = args.length;
 
-            while (--argLen) {
-                slicedArgs[argLen - 1] = args[argLen];
+            while (--argsLen > 0) {
+                slicedArgs[argsLen - 1] = args[argsLen];
             }
 
         return slicedArgs;
