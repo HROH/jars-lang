@@ -1,27 +1,32 @@
-JARS.module('lang.Function.Advice').$import(['.::apply', '.::from', '.::enhance', '.::getArity']).$export(function(applyFunction, fromFunction, enhance, getArity) {
+JARS.module('lang.Function.Advice').$import(['.::apply', '.::from', '.::enhance', '.::getArity', '.::attempt']).$export(function(applyFunction, fromFunction, enhance, getArity, attempt) {
     'use strict';
 
     var Advice = enhance({
-        after: function(executeAfterwards) {
-            return Advice.around(this, null, executeAfterwards);
+        after: function(executeAfterwards, options) {
+            return Advice.around(this, null, executeAfterwards, options);
         },
 
         before: function(executeBefore) {
             return Advice.around(this, executeBefore, null);
         },
 
-        around: function(executeBefore, executeAfterwards) {
-            var fn = this;
+        around: function(executeBefore, executeAfterwards, options) {
+            var fn = this,
+                handleThrow = options && options.handleThrow;
 
-            return fromFunction(function adviceFn() {
+            return fromFunction(function around() {
                 var context = this,
                     result;
 
                 executeBefore && applyFunction(executeBefore, context, arguments);
-                result = applyFunction(fn, context, arguments);
+                result = (handleThrow ? attempt : applyFunction)(fn, context, arguments);
                 executeAfterwards && applyFunction(executeAfterwards, context, arguments);
 
-                return result;
+                if(handleThrow && result.error) {
+                    throw result.error;
+                }
+
+                return handleThrow ? result.value : result;
             }, getArity(fn));
         }
     });
