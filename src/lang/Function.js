@@ -66,11 +66,11 @@ JARS.module('lang.Function', ['Advice', 'Combined', 'Flow', 'Guards', 'Modargs']
             return results;
         },
 
-        attempt: function() {
+        attempt: function(context, args) {
             var result = {};
 
             try {
-                result.value = applyFunction(this, null, arguments);
+                result.value = applyFunction(this, context || null, args);
             }
             catch(error) {
                 result.error = isA(error, Error) ? error : new Error(error);
