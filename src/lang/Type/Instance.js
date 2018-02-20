@@ -41,22 +41,22 @@ JARS.module('lang.Type.Instance').$import(['System.Formatter::format', 'lang::ge
         },
 
         isElevated: function(instance) {
-            return classMap.getInstance(instance).$isElevated;
+            return !!classMap.getInstance(instance).$isElevated;
         },
 
-        elevate: function(instance) {
+        elevate: function(method, instance) {
             var hiddenInstance = classMap.getInstance(instance);
 
             if(!hiddenInstance.$isElevated) {
                 extend(instance, hiddenInstance[PROTECTED_IDENTIFIER]);
-                hiddenInstance.$isElevated = true;
+                hiddenInstance.$isElevated = method;
             }
         },
 
-        commit: function(instance) {
+        commit: function(method, instance) {
             var hiddenInstance = classMap.getInstance(instance);
 
-            if(hiddenInstance.$isElevated) {
+            if(hiddenInstance.$isElevated === method) {
                 update(hiddenInstance[PROTECTED_IDENTIFIER], after(function(value, property) {
                     return instance[property];
                 }, function(value, property) {

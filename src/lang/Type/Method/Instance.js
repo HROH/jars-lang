@@ -1,20 +1,24 @@
 JARS.module('lang.Type.Method.Instance').$import([{
-    System: ['Logger', {
+    System: ['Logger', 'Formatter::format', {
         Modules: ['::getCurrentModuleData', '::use']
     }],
-    'lang.Function': ['::apply', '::attempt', '::getArity', '::setArity', 'Advice::before', 'Guards::once'],
+    lang: [{
+        Function: ['::apply', '::getArity', '::setArity', '::noop', 'Guards::once', {
+            Advice: ['::around', '::before']
+        }]
+    }, 'Array.Find::find'],
     '..Class': ['::is', 'Access']
-}, '..Instance', 'lang.Object.Extend::extend']).$export(function(Logger, getCurrentModuleData, use, applyFunction, attempt, getArity, setArity, before, once, isClass, Access, TypeInstance, extend) {
+}, '..Instance']).$export(function(Logger, format, getCurrentModuleData, use, applyFunction, getArity, setArity, noop, once, around, before, find, isClass, Access, TypeInstance) {
     'use strict';
 
     var instanceLogger = Logger.forCurrentModule(),
-        OR = ' or ',
-        MSG_PRIVILEGED_MISSING_DATA = 'Calling privileged method failed! No class or module defined',
-        MSG_PRIVILEGED_NO_INSTANCE = 'Calling privileged method failed! Method was called with no instance!',
-        MSG_PRIVILEGED_FAILED = 'Calling privileged method failed! ${instance} must be ',
-        MSG_PRIVILEGED_WRONG_CLASS = 'an instance of ${Class}',
-        MSG_PRIVILEGED_WRONG_MODULE = 'in one of the following modules: ${missingAccess}, but has only access to ${hasAccess}',
-        MSG_PRIVILEGED_ALREADY_DESTRUCTED = 'Calling privileged method failed! ${instance} was already destructed!',
+        privilegedPrediates = [],
+        applyPrivileged = around(applyFunction, TypeInstance.elevate, TypeInstance.commit, {
+            handleThrow: true
+        }),
+        MSG_PRIVILEGED_ERROR = 'Could not call privileged method. ',
+        MSG_PRIVILEGED_WRONG_CLASS = 'Must be an instance of ${Class}',
+        MSG_PRIVILEGED_WRONG_MODULE = 'Requires module access to ${missingAccess}, but has only access to ${hasAccess}',
         Instance;
 
     Instance = {
@@ -47,92 +51,63 @@ JARS.module('lang.Type.Method.Instance').$import([{
     };
 
     function handlePrivileged(Class, instance, method, args, moduleName) {
-        return canCallPrivileged(instance, Class, moduleName) ? callPrivileged(instance, method, args || []) : undefined;
+        return canCallPrivileged(instance, Class, moduleName) ? applyPrivileged(method, instance, args || []) : undefined;
     }
 
     function canCallPrivileged(instance, Class, moduleName) {
-        var message, data;
+        var foundFail = find(privilegedPrediates, function(predicateData) {
+            return !predicateData.predicate(instance, Class, moduleName);
+        });
 
-        if(isMissingData(Class, moduleName)) {
-            message = MSG_PRIVILEGED_MISSING_DATA;
-        }
-        else if(!TypeInstance.is(instance)) {
-            message = MSG_PRIVILEGED_NO_INSTANCE;
-        }
-        else if(!TypeInstance.exists(instance)) {
-            message = MSG_PRIVILEGED_ALREADY_DESTRUCTED;
-            data = {
-                instance: instance.getHash()
-            };
-        }
-        else if(!hasAccess(instance, Class, moduleName)) {
-            message = getAccessFailMessage(Class, moduleName);
-            data = extend({
-                instance: instance.getHash()
-            }, getModuleAccessFailData(instance.Class, moduleName, Class), getClassAccessFailData(instance, Class));
-        }
+        foundFail && instanceLogger.error(MSG_PRIVILEGED_ERROR + foundFail.message, foundFail.getData(instance, Class, moduleName));
 
-        message && instanceLogger.error(message, data);
-
-        return !message;
+        return !foundFail;
     }
 
-    function isMissingData(Class, moduleName) {
-        return !isClass(Class) && !moduleName;
+    function isPrivilegedWhen(predicate, message, getData) {
+        privilegedPrediates.push({
+            predicate: predicate,
+
+            message: message,
+
+            getData: getData || noop
+        });
     }
 
-    function hasAccess(instance, Class, moduleName) {
-        return (isClass(Class) && TypeInstance.is(instance)) || Access.canAccessClass(instance.Class, Class) || Access.canAccessModule(instance.Class, moduleName);
-    }
+    isPrivilegedWhen(function(instance, Class, moduleName) {
+        return isClass(Class) || !!moduleName;
+    }, 'No class or module defined!');
 
-    function getAccessFailMessage(Class, moduleName) {
-        var message;
+    isPrivilegedWhen(TypeInstance.is, 'No instance!');
 
-        if(isClass(Class)) {
-            message = MSG_PRIVILEGED_WRONG_CLASS;
-        }
+    isPrivilegedWhen(TypeInstance.exists, '${instance} was already destructed!', function(instance) {
+        return {
+            instance: instance.getHash()
+        };
+    });
 
-        if(!moduleName) {
-            message = (message ? message + OR : '') + MSG_PRIVILEGED_WRONG_MODULE;
-        }
+    isPrivilegedWhen(function(instance, Class, moduleName) {
+        return (isClass(Class) && Class.isInstance(instance)) || Access.canAccessClass(instance, Class) || Access.canAccessModule(instance.Class, moduleName);
+    }, '${instance} has no access. ${details}', function(instance, Class, moduleName) {
+        return {
+            instance: instance.getHash(),
 
-        return MSG_PRIVILEGED_FAILED + message;
-    }
+            details: getModuleAccessFailData(instance.Class, moduleName, Class) || getClassAccessFailData(instance, Class)
+        };
+    });
 
-    function getModuleAccessFailData(InstanceClass, moduleName, Class) {
-        return moduleName ? {
-            hasAccess: Access.getModuleAccess(InstanceClass).join(', '),
+    function getModuleAccessFailData(instance, moduleName, Class) {
+        return moduleName ? format(MSG_PRIVILEGED_WRONG_MODULE, {
+            hasAccess: Access.getModuleAccess(instance.Class).join(', '),
 
             missingAccess: isClass(Class) ? Access.getModuleAccess(Class).join(', ') : moduleName
-        } : {};
+        }) : '';
     }
 
     function getClassAccessFailData(instance, Class) {
-        return isClass(Class) ? {
+        return isClass(Class) ? format(MSG_PRIVILEGED_WRONG_CLASS, {
             Class: Class.getHash()
-        } : {};
-    }
-
-    function callPrivileged(instance, method, args) {
-        return TypeInstance.isElevated(instance) ? applyFunction(method, instance, args) : callElevatedPrivileged(instance, method, args);
-    }
-
-    function callElevatedPrivileged(instance, method, args) {
-        var result;
-
-        TypeInstance.elevate(instance);
-
-        result = attempt(function(){
-            return applyFunction(method, instance, args);
-        });
-
-        TypeInstance.commit(instance);
-
-        if(result.error) {
-            throw result.error;
-        }
-
-        return result.value;
+        }) : '';
     }
 
     return Instance;
