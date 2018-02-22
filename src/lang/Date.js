@@ -16,7 +16,7 @@ JARS.module('lang.Date').$import('.Type!Date').$export(function(DateCopy) {
     }
 
     function getISOTimeString(date) {
-		return pad(date.getUTCHours()) + ':' + pad(date.getUTCMinutes()) + ':' + pad(date.getUTCSeconds()) + '.' + (date.getUTCMilliseconds() / 1000).toFixed(3).slice(2, 5);
+        return pad(date.getUTCHours()) + ':' + pad(date.getUTCMinutes()) + ':' + pad(date.getUTCSeconds()) + '.' + (date.getUTCMilliseconds() / 1000).toFixed(3).slice(2, 5);
     }
 
     function pad(number) {

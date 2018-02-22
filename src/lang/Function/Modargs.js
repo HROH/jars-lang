@@ -38,13 +38,13 @@ JARS.module('lang.Function.Modargs').$import(['.::enhance', '.::from', '.::apply
          * Example:
          *
          * function(a) {
-         *	return a || value;
+         *     return a || value;
          * }
          *
          * This would be equal to:
          *
          * lang.Function.from(function(a) {
-         *	return a;
+         *     return a;
          * }).defaults(value);
          *
          */

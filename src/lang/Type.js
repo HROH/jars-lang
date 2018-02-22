@@ -1,36 +1,36 @@
 JARS.module('lang.Type', ['Class', 'ClassMap', 'Instance', 'Method']).meta({
-	plugIn: function(pluginRequest) {
+    plugIn: function(pluginRequest) {
         var requestor = pluginRequest.requestor,
-			EXTENSION_DELIMITER = ',',
-			EXTENSION_BUNDLE = 'All';
+            EXTENSION_DELIMITER = ',',
+            EXTENSION_BUNDLE = 'All';
 
         requestor.setMeta({
-			plugIn: function(typePluginRequest) {
-				var requestedExtensions = typePluginRequest.info.data.split(EXTENSION_DELIMITER),
-					extensions = [],
-					extLen = requestedExtensions.length,
-					idx = 0,
-					extension;
+            plugIn: function(typePluginRequest) {
+                var requestedExtensions = typePluginRequest.info.data.split(EXTENSION_DELIMITER),
+                    extensions = [],
+                    extLen = requestedExtensions.length,
+                    idx = 0,
+                    extension;
 
-				if (requestedExtensions[0] === EXTENSION_BUNDLE) {
-					extensions = [requestor.bundle.name];
-				}
-				else {
-					while (idx < extLen) {
-						extension = requestor.bundle.find(requestedExtensions[idx]);
+                if (requestedExtensions[0] === EXTENSION_BUNDLE) {
+                    extensions = [requestor.bundle.name];
+                }
+                else {
+                    while (idx < extLen) {
+                        extension = requestor.bundle.find(requestedExtensions[idx]);
 
-						extension ? extensions.push(extension) : typePluginRequest.fail('Couldn\'t find submodule "' + requestedExtensions[idx] + '"');
-						idx++;
-					}
-				}
+                        extension ? extensions.push(extension) : typePluginRequest.fail('Couldn\'t find submodule "' + requestedExtensions[idx] + '"');
+                        idx++;
+                    }
+                }
 
-				typePluginRequest.$importAndLink(extensions, function extensionsLoaded() {
-					return this;
-				});
-			}
+                typePluginRequest.$importAndLink(extensions, function extensionsLoaded() {
+                    return this;
+                });
+            }
         });
 
-		pluginRequest.$export(function() {
+        pluginRequest.$export(function() {
             return this.sandboxNative(pluginRequest.info.data);
         });
     }
@@ -82,7 +82,7 @@ JARS.module('lang.Type', ['Class', 'ClassMap', 'Instance', 'Method']).meta({
 
     function addPrototypeMethods(Type, prototypeMethods) {
         var typePrototype = Type.prototype,
-			enhanced = {};
+            enhanced = {};
 
         each(prototypeMethods, function(prototypeMethod, methodName) {
             // TODO always overide?
@@ -92,19 +92,19 @@ JARS.module('lang.Type', ['Class', 'ClassMap', 'Instance', 'Method']).meta({
             }
 
             hasOwnProp(Type, methodName) || (Type[methodName] = createDelegate(typePrototype[methodName]));
-			enhanced[methodName] = Type[methodName];
+            enhanced[methodName] = Type[methodName];
         });
 
-		return enhanced;
+        return enhanced;
     }
 
     function addStaticProps(Type, staticProps, enhanced) {
         each(staticProps, function(staticProp, key) {
             hasOwnProp(Type, key) || (Type[key] = staticProp);
-			enhanced[key] = Type[key];
+            enhanced[key] = Type[key];
         });
 
-		return enhanced;
+        return enhanced;
     }
 
     /**
@@ -128,11 +128,11 @@ JARS.module('lang.Type', ['Class', 'ClassMap', 'Instance', 'Method']).meta({
 
     function sliceArgs(args) {
         var slicedArgs = [],
-                argsLen = args.length;
+            argsLen = args.length;
 
-            while (--argsLen > 0) {
-                slicedArgs[argsLen - 1] = args[argsLen];
-            }
+        while (--argsLen > 0) {
+            slicedArgs[argsLen - 1] = args[argsLen];
+        }
 
         return slicedArgs;
     }
