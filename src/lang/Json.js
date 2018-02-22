@@ -1,5 +1,5 @@
 JARS.module('lang.Json').$import('System::env').$export(function(env) {
-	'use strict';
+    'use strict';
 
-	return env.JSON;
+    return env.JSON;
 });

@@ -43,7 +43,7 @@ JARS.module('lang.Function', ['Advice', 'Combined', 'Flow', 'Guards', 'Modargs']
          * The last parameter refers to the current execution time
          *
          * lang.Function.from(function(time) {
-         *	System.Logger.log(time + ' time(s) executed');
+         *     System.Logger.log(time + ' time(s) executed');
          * }).repeat(5);
          *
          * outputs:
