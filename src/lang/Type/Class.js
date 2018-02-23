@@ -17,8 +17,10 @@ JARS.module('lang.Type.Class', ['Access', 'Destructors', 'ExtendedPrototypeBuild
         },
         typeClassLogger = Logger.forCurrentModule(),
         CLASS_BLUEPRINT = 'return function ${name}(){return this instanceof ${name}?${name}.New(this,arguments):${name}.New(arguments);}',
+        CLASS_HASH = 'Class #<${module}:${Class}>',
+        PROTO = '${id}proto',
         RE_CLASS = /^[A-Z]\w+$/,
-        MSG_INVALID_OR_EXISTING_CLASS = 'Invalid or already existing Class: ${hash}',
+        MSG_INVALID_OR_EXISTING_CLASS = 'Invalid or already existing Class: ${Class}',
         TypeClass;
 
     MetaClass.prototype.toString = function() {
@@ -82,7 +84,7 @@ JARS.module('lang.Type.Class', ['Access', 'Destructors', 'ExtendedPrototypeBuild
             }
             else {
                 typeClassLogger.warn(MSG_INVALID_OR_EXISTING_CLASS, {
-                    hash: classHash
+                    Class: classHash
                 });
             }
 
@@ -126,11 +128,17 @@ JARS.module('lang.Type.Class', ['Access', 'Destructors', 'ExtendedPrototypeBuild
     }
 
     function getPrototypeKey(id) {
-        return id + 'proto';
+        return format(PROTO, {
+            id: id
+        });
     }
 
     function createClassHash(name, moduleName) {
-        return 'Class #<' + moduleName + ':' + name + '>';
+        return format(CLASS_HASH, {
+            module: moduleName,
+
+            Class: name
+        });
     }
 
     return TypeClass;
