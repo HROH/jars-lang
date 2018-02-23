@@ -10,14 +10,13 @@ JARS.module('lang.Type.Class', ['Access', 'Destructors', 'ExtendedPrototypeBuild
 
     var CLASS = 'Class',
         classMap = ClassMap.withKey(CLASS, identity),
-        metaClassSandbox = sandbox('__META_CLASS__'),
-        MetaClass = metaClassSandbox.add('Function'),
+        MetaClass = sandbox('__META_CLASS__').add('Function'),
         accessIdentifiers = {
             _: 'private',
             _$: 'protected'
         },
         typeClassLogger = Logger.forCurrentModule(),
-        CLASS_BLUEPRINT = '(function(){function ${name}(){return this instanceof ${name}?${name}.New(this,arguments):${name}.New(arguments)};return ${name}})()',
+        CLASS_BLUEPRINT = 'return function ${name}(){return this instanceof ${name}?${name}.New(this,arguments):${name}.New(arguments);}',
         RE_CLASS = /^[A-Z]\w+$/,
         MSG_INVALID_OR_EXISTING_CLASS = 'Invalid or already existing Class: ${hash}',
         TypeClass;
@@ -43,9 +42,9 @@ JARS.module('lang.Type.Class', ['Access', 'Destructors', 'ExtendedPrototypeBuild
                 Class;
 
             if (RE_CLASS.test(name) && !classMap.hasHash(classHash)) {
-                Class = metaClassSandbox.add(format(CLASS_BLUEPRINT, {
+                Class = MetaClass(format(CLASS_BLUEPRINT, {
                     name: name
-                }));
+                }))();
 
                 merge(Class, {
                     prototype: {
@@ -101,13 +100,7 @@ JARS.module('lang.Type.Class', ['Access', 'Destructors', 'ExtendedPrototypeBuild
             extend(Class, staticProperties || {}, Superclass);
         },
 
-        remove: function(Class) {
-            metaClassSandbox.remove(format(CLASS_BLUEPRINT, {
-                name: Class.getClassName()
-            }));
-
-            ClassMap.remove(Class);
-        },
+        remove: ClassMap.remove,
 
         getPrototypesOf: function(Class) {
             return map(accessIdentifiers, function(alias, id) {
