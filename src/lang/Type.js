@@ -1,30 +1,35 @@
 JARS.module('lang.Type', ['Class', 'ClassMap', 'Instance', 'Method']).meta({
-    plugIn: function(pluginRequest) {
-        var requestor = pluginRequest.requestor,
+    plugIn: function(pluginRequest, getInternal) {
+        var SubjectsRegistry = getInternal('Registries/Subjects'),
+            BundleResolver = getInternal('Resolvers/Bundle'),
+            requestor = pluginRequest.requestor,
             EXTENSION_DELIMITER = ',',
-            EXTENSION_BUNDLE = 'All';
+            EXTENSION_BUNDLE = 'All',
+            MSG_MISSING_SUBMODULE = 'couldn\'t find submodule "${0}"';
 
         requestor.setMeta({
             plugIn: function(typePluginRequest) {
                 var requestedExtensions = typePluginRequest.info.data.split(EXTENSION_DELIMITER),
+                    requestorBundle = SubjectsRegistry.get(BundleResolver.getBundleName(requestor.name)),
                     extensions = [],
                     extLen = requestedExtensions.length,
                     idx = 0,
-                    extension;
+                    extensionModule;
 
                 if (requestedExtensions[0] === EXTENSION_BUNDLE) {
-                    extensions = [requestor.bundle.name];
+                    extensions = [requestorBundle.name];
                 }
                 else {
                     while (idx < extLen) {
-                        extension = requestor.bundle.find(requestedExtensions[idx]);
+                        extensionModule = requestorBundle.dependencies.find(requestedExtensions[idx]);
 
-                        extension ? extensions.push(extension) : typePluginRequest.fail('Couldn\'t find submodule "' + requestedExtensions[idx] + '"');
+                        extensionModule ? extensions.push(extensionModule.name) : typePluginRequest.state.setAborted(MSG_MISSING_SUBMODULE, [requestedExtensions[idx]]);
                         idx++;
                     }
                 }
 
-                typePluginRequest.$importAndLink(extensions, function extensionsLoaded() {
+                typePluginRequest.$import(extensions);
+                typePluginRequest.$export(function extensionsLoaded() {
                     return this;
                 });
             }
