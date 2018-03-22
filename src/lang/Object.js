@@ -1,9 +1,9 @@
-JARS.module('lang.Object', ['Derive', 'Extend', 'Info', 'Iterate', 'Manipulate', 'Reduce']).$import([{
-    System: ['::$$internals', '::isA', '::isObject']
-}, '.Type!Object']).$export(function(internals, isA, isObject, Obj) {
+JARS.module('lang.Object', ['Derive', 'Extend', 'Info', 'Iterate', 'Manipulate', 'Reduce']).$import(['*!Helpers/Object', {
+    System: ['::isA', '::isObject']
+}, '.Type!Object']).$export(function(ObjectHelper, isA, isObject, Obj) {
     'use strict';
 
-    var merge = internals.get('Helpers/Object').merge;
+    var merge = ObjectHelper.merge;
 
     /**
      * Extend lang.Object with some useful methods

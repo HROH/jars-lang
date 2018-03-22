@@ -19,15 +19,13 @@ JARS.module('lang', [
     'transducers',
     'transformer.*',
     'Type.*'
-]).$import({
-    System: ['::isString', '::$$internals']
-}).$export(function(isString, internals) {
+]).$import(['*!Helpers/Object', 'System::isString']).$export(function(ObjectHelper, isString) {
     'use strict';
 
     var sandboxes = {},
         container = document.documentElement,
         __SANDBOX__ = '__SANDBOX__',
-        hasOwnProp = internals.get('Helpers/Object').hasOwnProp,
+        hasOwnProp = ObjectHelper.hasOwnProp,
         lang;
 
     /**

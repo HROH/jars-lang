@@ -39,17 +39,16 @@ JARS.module('lang.Type', ['Class', 'ClassMap', 'Instance', 'Method']).meta({
             return this.sandboxNative(pluginRequest.info.data);
         });
     }
-}).$import(['.::sandbox', {
-    System: ['::env', '::isFunction', '::$$internals', '!']
-}]).$export(function(sandbox, env, isFunction, internals, config) {
+}).$import(['*!Helpers/Object', '.::sandbox', {
+    System: ['::env', '::isFunction', 'Modules!']
+}]).$export(function(ObjectHelper, sandbox, env, isFunction, config) {
     'use strict';
 
     var SYSTEM_SANDBOX = '__SYSTEM__',
         nativeTypes = {},
         nativeTypeSandbox = sandbox(SYSTEM_SANDBOX),
-        ObjectHelpers = internals.get('Helpers/Object'),
-        hasOwnProp = ObjectHelpers.hasOwnProp,
-        each = ObjectHelpers.each,
+        hasOwnProp = ObjectHelper.hasOwnProp,
+        each = ObjectHelper.each,
         Type;
 
     Type = {
