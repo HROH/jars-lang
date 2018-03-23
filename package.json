@@ -18,6 +18,6 @@
     "watch": "gulp -- watch"
   },
   "dependencies": {
-    "jars": "file:../JARS"
+    "jars": "git+ssh://git@github.com/HROH/JARS.git"
   }
 }
