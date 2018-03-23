@@ -24,7 +24,7 @@ JARS.module('lang.transformer.Find').$export(function() {
         },
 
         result: function(result) {
-            return this._transform.result(this._found ? result : this._transform.step(result, undefined));
+            return this._transform.result(this._found ? result : this._transform.step(result));
         }
     };
 

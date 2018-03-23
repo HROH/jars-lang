@@ -11,15 +11,15 @@ JARS.module('lang.Type.Class.Pool').$import(['.::enhance', '..ClassMap', {
             onAdded: function() {
                 return {
                     free: [],
-        
+
                     reserved: {},
-        
+
                     autoAdjustFactor: 0,
-        
+
                     poolSize: 0
                 };
             },
-            
+
             onInstanceRemoved: function(instance) {
                 var Class = instance.Class,
                     reservedInstances = classMap.get(Class, RESERVED),

@@ -6,7 +6,7 @@ JARS.module('lang.Type.Class.Module').$import(['System.Modules::use', '.::enhanc
             var Class = this,
                 moduleName = Class.getModuleName();
 
-            return (use(moduleName) === Class) ? moduleName.substring(0, moduleName.lastIndexOf('.')) || moduleName : moduleName;
+            return use(moduleName) === Class ? moduleName.substring(0, moduleName.lastIndexOf('.')) || moduleName : moduleName;
         },
 
         getModule: function() {

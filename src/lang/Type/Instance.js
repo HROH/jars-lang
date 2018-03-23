@@ -12,7 +12,7 @@ JARS.module('lang.Type.Instance').$import(['System.Formatter::format', 'lang::ge
             onInstanceAdded: function(instance) {
                 return extend({
                     instance: instance,
-    
+
                     $isElevated: false
                 }, getPrototypesOf(instance.Class));
             }
@@ -26,7 +26,7 @@ JARS.module('lang.Type.Instance').$import(['System.Formatter::format', 'lang::ge
         add: after(function(instance) {
             // never delete or override this method
             instance.getHash = Constant(createInstanceHash(instance));
-            
+
             return instance;
         }, ClassMap.addInstance),
 
@@ -73,14 +73,14 @@ JARS.module('lang.Type.Instance').$import(['System.Formatter::format', 'lang::ge
             instances = classMap.getInstances(Class),
             instanceHash;
 
-            do {
-                instanceHash = format(INSTANCE_HASH, {
-                    module: Class.getModuleName(),
-                    Class: Class.getClassName(),
-                    hash: generateHash('xx-x-x-x-xxx')
-                });
-            }
-            while (hasOwn(instances, instanceHash));
+        do {
+            instanceHash = format(INSTANCE_HASH, {
+                module: Class.getModuleName(),
+                Class: Class.getClassName(),
+                hash: generateHash('xx-x-x-x-xxx')
+            });
+        }
+        while (hasOwn(instances, instanceHash));
 
         return instanceHash;
     }

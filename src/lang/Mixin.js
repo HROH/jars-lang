@@ -26,7 +26,7 @@ JARS.module('lang.Mixin').$import(['System::isArray', '.ObjectMixin', '.Object.E
 
                     if(!canMixin) {
                         this._$logger.warn(MSG_RECEIVER_TYPE_MISMATCH, {
-                            receiver: (isClass(receiver) || isInstance(receiver)) ? receiver.getHash() : receiver
+                            receiver: isClass(receiver) || isInstance(receiver) ? receiver.getHash() : receiver
                         });
                     }
                 }
@@ -63,7 +63,7 @@ JARS.module('lang.Mixin').$import(['System::isArray', '.ObjectMixin', '.Object.E
         _$: {
             allowedClasses: null,
 
-            destructor: null,
+            destructor: null
         }
     }).extendz(ObjectMixin);
 

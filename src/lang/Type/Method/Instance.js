@@ -51,7 +51,7 @@ JARS.module('lang.Type.Method.Instance').$import([{
     };
 
     function handlePrivileged(Class, instance, method, args, moduleName) {
-        return canCallPrivileged(instance, Class, moduleName) ? applyPrivileged(method, instance, args || []) : undefined;
+        return canCallPrivileged(instance, Class, moduleName) ? applyPrivileged(method, instance, args || []) : null;
     }
 
     function canCallPrivileged(instance, Class, moduleName) {

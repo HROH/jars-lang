@@ -31,10 +31,12 @@ JARS.module('lang.String', ['Camelizer']).$import([{
         fromNative: fromString
     });
 
-    // TODO
-    // bug in chrome?: new StringCopy() sometimes can't access added methods
-    // solved temporary by using StringCopy.fromNative() with while-loop
-    // search for course/better solution
+    /*
+     * TODO
+     * bug in chrome?: new StringCopy() sometimes can't access added methods
+     * solved temporary by using StringCopy.fromNative() with while-loop
+     * search for course/better solution
+     */
     function fromString(string) {
         string = string || '';
 

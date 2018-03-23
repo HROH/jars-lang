@@ -41,10 +41,7 @@ JARS.module('lang.Type.Class.Destructors').$import(['System::isFunction', '.::en
                 destructors = classMap.getInstance(instance);
 
             if (Class.isInstance(instance) && destructors) {
-                do {
-                    mergeUnique(destructors, classMap.get(Class, CLASS_DESTRUCTORS));
-                    Class = Class.getSuperclass();
-                } while (Class);
+                destructors = addClassDestructors(destructors, Class);
 
                 while (destructors.length) {
                     destructors.shift().call(instance);
@@ -76,6 +73,15 @@ JARS.module('lang.Type.Class.Destructors').$import(['System::isFunction', '.::en
             removeClass(Class);
         }
     });
+
+    function addClassDestructors(destructors, Class) {
+        do {
+            mergeUnique(destructors, classMap.get(Class, CLASS_DESTRUCTORS));
+            Class = Class.getSuperclass();
+        } while (Class);
+
+        return destructors;
+    }
 
     return Destructors;
 });

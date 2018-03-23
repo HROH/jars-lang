@@ -13,7 +13,7 @@ JARS.module('lang.Array.Manipulate').$import(['System::isArrayLike', '.::enhance
         },
 
         mergeUnique: function(sourceArray) {
-           return transduce(filter(negate(partial(contains, this))), ArrayCollector.step, this, sourceArray);
+            return transduce(filter(negate(partial(contains, this))), ArrayCollector.step, this, sourceArray);
         },
 
         removeAll: function(array) {

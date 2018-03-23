@@ -32,7 +32,7 @@ JARS.module('lang.Interface').$import(['.ObjectInterface', '.Array.Derive::filte
             },
 
             logNotImplemented: function(implementor, notImplementedMethods) {
-                this.$super((isClass(implementor) || isInstance(implementor)) ? implementor.getHash() : implementor, notImplementedMethods);
+                this.$super(isClass(implementor) || isInstance(implementor) ? implementor.getHash() : implementor, notImplementedMethods);
             }
         }
     }).extendz(ObjectInterface);

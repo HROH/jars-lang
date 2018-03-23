@@ -1,7 +1,7 @@
 JARS.module('lang.Type.Class.Instance').$import(['.::enhance', '..ClassMap', '.ExtendedPrototypeBuilder::isExtending', '..Instance::add', {
     lang: ['Constant::FALSE', 'Object.Info::values', {
         Array: ['Reduce::reduce', 'Find::find'],
-        Function: ['::identity', 'Advice::around'],
+        Function: ['::identity', 'Advice::around']
     }],
     System: ['::isA', '::isFunction']
 }]).$export(function(enhance, ClassMap, isExtending, addInstance, FALSE, values, arrayReduce, find, identity, around, isA, isFunction) {
@@ -27,8 +27,10 @@ JARS.module('lang.Type.Class.Instance').$import(['.::enhance', '..ClassMap', '.E
             var Class = this,
                 returnValue, foundFail;
 
-            // isExtending() is true when a Subclass is inheriting over Subclass.extendz(Superclass)
-            // In this case we don't need the constructor to be executed neither do we need a new instance to be saved
+            /*
+             * isExtending() is true when a Subclass is inheriting over Subclass.extendz(Superclass)
+             * In this case we don't need the constructor to be executed neither do we need a new instance to be saved
+             */
             if (isExtending(Class)) {
                 returnValue = instanceOrArgs;
             }
@@ -47,9 +49,11 @@ JARS.module('lang.Type.Class.Instance').$import(['.::enhance', '..ClassMap', '.E
                         instanceOrArgs = addInstance(instanceOrArgs);
                     }
                     else {
-                        // We came here because Class.New was called directly
-                        // [ Class.New([arg1, arg2, ...]) <--> new Class(arg1, arg2, ...) ]
-                        // So we have to create a new instance and return it
+                        /*
+                         * We came here because Class.New was called directly
+                         * [ Class.New([arg1, arg2, ...]) <--> new Class(arg1, arg2, ...) ]
+                         * So we have to create a new instance and return it
+                         */
                         args = instanceOrArgs;
 
                         returnValue = instanceOrArgs = Class.NewBare();

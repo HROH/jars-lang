@@ -17,7 +17,7 @@ JARS.module('lang.Object', ['Derive', 'Extend', 'Info', 'Iterate', 'Manipulate',
     });
 
     function fromObject(object) {
-        return (isA(object, Obj) || !isObject(object)) ? object : merge(Obj(), object);
+        return isA(object, Obj) || !isObject(object) ? object : merge(Obj(), object);
     }
 
     return Obj;

@@ -49,7 +49,9 @@ JARS.module('lang.Object.Extend').$import(['.::enhance', '.::hasOwn', {
                 mergedObjects.push([mergeObject, destObject]);
 
                 for (prop in mergeObject) {
-                    hasOwn(mergeObject, prop) && merge(destObject, mergeObject, prop, deep, keepDefault);
+                    if(hasOwn(mergeObject, prop)) {
+                        merge(destObject, mergeObject, prop, deep, keepDefault);
+                    }
                 }
 
                 --mergeLevel || (mergedObjects = Arr());

@@ -1,5 +1,7 @@
 JARS.module('lang.Type', ['Class', 'ClassMap', 'Instance', 'Method']).meta({
     plugIn: function(pluginRequest, getInternal) {
+        'use strict';
+
         var SubjectsRegistry = getInternal('Registries/Subjects'),
             BundleResolver = getInternal('Resolvers/Bundle'),
             requestor = pluginRequest.requestor,
@@ -89,8 +91,7 @@ JARS.module('lang.Type', ['Class', 'ClassMap', 'Instance', 'Method']).meta({
             enhanced = {};
 
         each(prototypeMethods, function(prototypeMethod, methodName) {
-            // TODO always overide?
-            // !hasOwnProp(typePrototype, methodName)
+            // TODO always overide? !hasOwnProp(typePrototype, methodName)
             if (isFunction(prototypeMethod)) {
                 typePrototype[methodName] = prototypeMethod;
             }

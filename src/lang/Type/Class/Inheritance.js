@@ -10,7 +10,7 @@ JARS.module('lang.Type.Class.Inheritance').$import(['System::isA', '.::enhance',
             onAdded: function() {
                 return {
                     superclass: null,
-        
+
                     subclasses: {}
                 };
             },
@@ -39,7 +39,7 @@ JARS.module('lang.Type.Class.Inheritance').$import(['System::isA', '.::enhance',
             getData: getData || getDefaultData
         });
     }
-    
+
     function getDefaultData(Class, Superclass) {
         return {
             superclass: Superclass.getHash()

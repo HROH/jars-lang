@@ -4,7 +4,6 @@ JARS.module('lang.transformer.FindLast').$export(function() {
     function FindLast(predicate, transform) {
         this._transform = transform;
         this._predicate = predicate;
-        this._lastFound = undefined;
     }
 
     FindLast.prototype = {

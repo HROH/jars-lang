@@ -4,8 +4,8 @@ JARS.module('lang.Array.Iterate').$import(['.::enhance', '..transcollectors.Empt
     'use strict';
 
     var createLoop = partial(withCallback, PLACEHOLDER, {
-            collector: Empty
-        });
+        collector: Empty
+    });
 
     return enhance({
         each: createLoop('each'),

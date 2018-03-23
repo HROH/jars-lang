@@ -8,7 +8,7 @@ JARS.module('lang.Type.Method.Array').$import(['.::withAssert', {
 
     var ARRAY = 'Array',
         ArrayMethod;
-        
+
     ArrayMethod = {
         withCallback: function(methodName, transduceOptions) {
             return withCallback(ARRAY, methodName, getTransduceOptions(transduceOptions || {}));

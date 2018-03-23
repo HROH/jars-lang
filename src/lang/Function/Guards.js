@@ -36,7 +36,7 @@ JARS.module('lang.Function.Guards').$import(['.::enhance', '.::from', '.::apply'
 
             unguarded !== guardBefore && called++;
 
-            return unguarded ? applyFunction(fn, this, arguments) : undefined;
+            return unguarded ? applyFunction(fn, this, arguments) : null;
         });
     }
 

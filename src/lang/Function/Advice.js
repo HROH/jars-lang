@@ -12,15 +12,16 @@ JARS.module('lang.Function.Advice').$import(['.::apply', '.::from', '.::enhance'
 
         around: function(executeBefore, executeAfterwards, options) {
             var fn = this,
-                handleThrow = options && options.handleThrow;
+                handleThrow = options && options.handleThrow,
+                apply = handleThrow ? attempt : applyFunction;
 
             return fromFunction(function around() {
                 var context = this,
                     result;
 
-                executeBefore && applyFunction(executeBefore, context, arguments);
-                result = (handleThrow ? attempt : applyFunction)(fn, context, arguments);
-                executeAfterwards && applyFunction(executeAfterwards, context, arguments);
+                applyAdvice(executeBefore, context, arguments);
+                result = apply(fn, context, arguments);
+                applyAdvice(executeAfterwards, context, arguments);
 
                 if(handleThrow && result.error) {
                     throw result.error;
@@ -30,6 +31,10 @@ JARS.module('lang.Function.Advice').$import(['.::apply', '.::from', '.::enhance'
             }, getArity(fn));
         }
     });
+
+    function applyAdvice(advice, context, args) {
+        advice && applyFunction(advice, context, args);
+    }
 
     return Advice;
 });

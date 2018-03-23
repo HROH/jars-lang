@@ -20,39 +20,61 @@ JARS.module('lang.Function.Flow').$import([{
      * @return {Function}
      */
     function createRegulatorFunction(fn, msClosed, options, resetOnCall) {
-        var closed = false,
-            lastArgs, timeoutID, context;
-
-        if (!(options.leading || options.trailing)) {
-            options = defaultRegulatorOptions;
-        }
-
-        function open() {
-            closed = false;
-
-            if (lastArgs && options.trailing) {
-                applyFunction(fn, context, lastArgs);
-                context = lastArgs = null;
-            }
-        }
+        var regulator = new Regulator(options.leading || options.trailing ? options : defaultRegulatorOptions, resetOnCall, msClosed);
 
         return fromFunction(function regulatorFn() {
-            context = this;
-            timeoutID = closed;
-
-            if (resetOnCall || !closed) {
-                closed = global.setTimeout(open, msClosed);
-            }
-
-            if (timeoutID || !options.leading) {
-                resetOnCall && global.clearTimeout(timeoutID);
-                lastArgs = arguments;
-            }
-            else {
-                applyFunction(fn, context, arguments);
-            }
+            regulator.resetOrApply(fn, this, arguments);
         }, getArity(fn));
     }
+
+    function Regulator(options, resetOnCall, msClosed) {
+        this._closed = false;
+        this._last = null;
+        this._options = options;
+        this._reset = resetOnCall;
+        this._msClosed = msClosed;
+    }
+
+    Regulator.prototype = {
+        constructor: Regulator,
+
+        open: function() {
+            var regulator = this,
+                lastCall = regulator._last;
+
+            regulator._closed = false;
+
+            if (lastCall && regulator._options.trailing) {
+                applyFunction(lastCall[0], lastCall[1], lastCall[2]);
+                regulator._last = null;
+            }
+        },
+
+        resetOrApply: function(fn, context, args) {
+            var regulator = this,
+                timeoutID = regulator._closed;
+
+            regulator._close();
+
+            if(timeoutID || !regulator._options.leading) {
+                regulator._reset && global.clearTimeout(timeoutID);
+                regulator._last = [fn, context, args];
+            }
+            else {
+                applyFunction(fn, context, args);
+            }
+        },
+
+        _close: function() {
+            var regulator = this;
+
+            if (regulator._reset || !regulator._closed) {
+                regulator._closed = global.setTimeout(function() {
+                    regulator.open();
+                }, regulator._msClosed);
+            }
+        }
+    };
 
     return enhance({
         debounce: function(ms, immediate) {

@@ -12,7 +12,7 @@ JARS.module('lang.Function', ['Advice', 'Combined', 'Flow', 'Guards', 'Modargs']
                 FnLink = function() {},
                 boundArgs = fromArgs(arguments).slice(1),
                 returnFn = fromFunction(function boundFn() {
-                    return applyFunction(fnToBind, (isA(this, FnLink) && context) ? this : context, boundArgs.concat(fromArgs(arguments)));
+                    return applyFunction(fnToBind, isA(this, FnLink) && context ? this : context, boundArgs.concat(fromArgs(arguments)));
                 }, Fn.getArity(fnToBind));
 
             FnLink.prototype = fnToBind.prototype;
@@ -103,7 +103,7 @@ JARS.module('lang.Function', ['Advice', 'Combined', 'Flow', 'Guards', 'Modargs']
      * @return {Function}
      */
     function fromFunction(fn, arity) {
-        return (isA(fn, Fn) || !isFunction(fn)) ? fn : Fn.setArity(fnConverter(fn), arguments.length > 1 ? arity : Fn.getArity(fn));
+        return isA(fn, Fn) || !isFunction(fn) ? fn : Fn.setArity(fnConverter(fn), arguments.length > 1 ? arity : Fn.getArity(fn));
     }
 
     return Fn;

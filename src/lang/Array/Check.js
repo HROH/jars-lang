@@ -6,8 +6,8 @@ JARS.module('lang.Array.Check').$import(['.::enhance', {
     'use strict';
 
     var createCheck = partial(withCallback, PLACEHOLDER, {
-            collector: Result
-        });
+        collector: Result
+    });
 
     return enhance({
         every: createCheck('every'),

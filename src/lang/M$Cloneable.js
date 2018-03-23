@@ -6,7 +6,7 @@ JARS.module('lang.M$Cloneable').$import('.Mixin').$export(function(Mixin) {
             var clone = new this.Class();
 
             if (clone === this) {
-                clone = undefined;
+                clone = null;
             }
 
             return clone;

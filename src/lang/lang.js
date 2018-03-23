@@ -98,9 +98,12 @@ JARS.module('lang', [
         container.appendChild(iframe);
         sandboxWindow = iframe.contentWindow;
         sandboxDoc = sandboxWindow.document;
-        //fire the onload event of the iframe
-        //this is necessary so that the iframe doesn't block window.onload of the main page
-        //found on http://www.aaronpeters.nl/blog/iframe-loading-techniques-performance?%3E
+
+        /*
+         * fire the onload event of the iframe
+         * this is necessary so that the iframe doesn't block window.onload of the main page
+         * found on http://www.aaronpeters.nl/blog/iframe-loading-techniques-performance
+         */
         sandboxDoc.open();
         //iframe onload happens after document.close()
         sandboxDoc.close();

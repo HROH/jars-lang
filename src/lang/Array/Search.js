@@ -16,7 +16,8 @@ JARS.module('lang.Array.Search').$import(['.::enhance', {
     function createIndexOf(methodName, findMethod) {
         return withAssert(methodName, function(searchElement, fromIndex) {
             return findMethod(this, function(value) {
-                return value === searchElement.valueOf(); // use valueOf() to compare numbers correctly
+                // use valueOf() to compare numbers correctly
+                return value === searchElement.valueOf();
             }, null, fromIndex);
         });
     }

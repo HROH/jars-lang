@@ -18,7 +18,7 @@ JARS.module('lang.Object.Info').$import(['.::enhance', '.::hasOwn', '.Reduce::re
 
         prop: withAssert('prop', function(key) {
             return arrayReduce(key.split('.'), function(obj, key) {
-                return (obj && hasOwn(obj, key)) ? obj[key] : undefined;
+                return obj && hasOwn(obj, key) ? obj[key] : null;
             }, this);
         }),
 

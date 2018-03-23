@@ -13,9 +13,9 @@ JARS.module('lang.operations', ['Arithmetic', 'Comparison', 'Bitwise', 'Logical'
         operands: operands,
 
         createOperation: function(operator, negate) {
-            /*jslint evil: true */
             assert(operator.length <= 6, 'Operator is too long!');
 
+            /* eslint-disable no-new-func */
             return new Function(operands.FIRST, operands.SECOND, format(operationBody, {
                 op: [negate ? '!' : '', '(', operands.FIRST, operator, operands.SECOND, ')'].join(''),
 
@@ -23,6 +23,7 @@ JARS.module('lang.operations', ['Arithmetic', 'Comparison', 'Bitwise', 'Logical'
 
                 SECOND: operands.SECOND
             }));
+            /* eslint-enable no-new-func */
         }
     };
 

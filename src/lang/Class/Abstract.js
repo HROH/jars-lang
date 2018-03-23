@@ -38,8 +38,10 @@ JARS.module('lang.Class.Abstract').$import(['lang.Type.ClassMap', 'lang.Constant
         return Class;
     }
 
-    // If Class is an abstract Class return an empty Object
-    // Returning undefined won't work because of the function behaviour in combination with 'new'
+    /*
+     * If Class is an abstract Class return an empty Object
+     * Returning undefined won't work because of the function behaviour in combination with 'new'
+     */
     ClassFactory.isNewableWhen(function(Class) {
         return !Class.isAbstract();
     }, 'You can\'t create a new instance of an abstract Class.', function() {
