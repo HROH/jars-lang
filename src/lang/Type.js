@@ -2,36 +2,32 @@ JARS.module('lang.Type', ['Class', 'ClassMap', 'Instance', 'Method']).meta({
     plugIn: function(pluginRequest, getInternal) {
         'use strict';
 
-        var SubjectsRegistry = getInternal('Registries/Subjects'),
-            BundleResolver = getInternal('Resolvers/Bundle'),
+        var each = getInternal('Helpers/Array').each,
             requestor = pluginRequest.requestor,
+            requestorBundle = requestor.getParentBundle(),
             EXTENSION_DELIMITER = ',',
             EXTENSION_BUNDLE = 'All',
             MSG_MISSING_SUBMODULE = 'couldn\'t find submodule "${0}"';
 
         requestor.setMeta({
             plugIn: function(typePluginRequest) {
-                var requestedExtensions = typePluginRequest.info.data.split(EXTENSION_DELIMITER),
-                    requestorBundle = SubjectsRegistry.get(BundleResolver.getBundleName(requestor.name)),
-                    extensions = [],
-                    extLen = requestedExtensions.length,
-                    idx = 0,
+                var extensions = typePluginRequest.info.data.split(EXTENSION_DELIMITER),
+                    dependencies = [],
                     extensionModule;
 
-                if (requestedExtensions[0] === EXTENSION_BUNDLE) {
-                    extensions = [requestorBundle.name];
+                if (extensions[0] === EXTENSION_BUNDLE) {
+                    dependencies = [requestorBundle.name];
                 }
                 else {
-                    while (idx < extLen) {
-                        extensionModule = requestorBundle.dependencies.find(requestedExtensions[idx]);
+                    each(extensions, function(extension) {
+                        extensionModule = requestorBundle.dependencies.find(extension);
 
-                        extensionModule ? extensions.push(extensionModule.name) : typePluginRequest.state.setAborted(MSG_MISSING_SUBMODULE, [requestedExtensions[idx]]);
-                        idx++;
-                    }
+                        extensionModule ? dependencies.push(extensionModule.name) : typePluginRequest.abort(MSG_MISSING_SUBMODULE, [extension]);
+                    });
                 }
 
-                typePluginRequest.$import(extensions);
-                typePluginRequest.$export(function extensionsLoaded() {
+                typePluginRequest.$import(dependencies);
+                typePluginRequest.$export(function() {
                     return this;
                 });
             }
